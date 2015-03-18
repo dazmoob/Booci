@@ -10,7 +10,7 @@ class composer {
 
 	function __construct() {
 
-		include ('./vendor/autoload.php');
+		// include ('./vendor/autoload.php');
 
 	}
 

@@ -51,7 +51,7 @@ class Common extends CI_Model {
 		basic_info()
 		Used to get all web basic information
 	*/
-	public function basic_info($view = false) {
+	public function basic_info($view = false, $basic = false) {
 
 		// Get and fetch data from web table
 		$query = $this->db->get('web');
@@ -61,9 +61,13 @@ class Common extends CI_Model {
 		if ($view) :
 
 			$raw = $query->row();
+
+			// Check web title info
+			$title = !empty($basic) ? $basic['title'] : $raw->title;
+
 			$data = array(
 				'name' => $raw->name,
-				'title' => $raw->title,
+				'title' => $title,
 				'domain' => $raw->domain,
 				'description' => $raw->description,
 				'keyword' => $raw->keyword,
@@ -84,7 +88,7 @@ class Common extends CI_Model {
 	public function backend($pages = false) {
 
 		if (!empty($pages)) :
-			$this->load->view('backend/login/index');
+			$this->load->view('backend/index', $pages);
 		endif;
 
 	}

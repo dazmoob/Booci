@@ -41,6 +41,11 @@
 $route['default_controller'] = "login";
 $route['404_override'] = '';
 
+// Backend
+$route['login/admin/(:any)'] = 'login/admin/$1';
+
+// Frontend
+// $route['login/admin/(:num)'] = 'login/admin/$1';
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

@@ -20,14 +20,15 @@ class Login extends CI_Controller {
 
 	function __constrcut() {
 		$this->load->model('user');
+		$ci =& get_instance();
 	}
 
 	/*
 		=========== Private Function =============
 	*/
 
-	private function set_variable() {
-		$this->basic = $this->common->basic_info(true);
+	private function set_variable($basic = false) {
+		$this->basic = $this->common->basic_info(true, $basic);
 	}
 
 
@@ -37,21 +38,29 @@ class Login extends CI_Controller {
 	*/
 
 	public function index() {
-		$filepath = APPPATH.'/config/access_level.yaml';
-		$array = $this->yaml->parse_file($filepath);
-		var_dump($array);
 		// $this->load->view('welcome_message');
 	}
+
+	// public function index() {
+	// 	$filepath = APPPATH.'/config/access_level.yaml';
+	// 	$array = $this->yaml->parse_file($filepath);
+	// 	var_dump($array);
+	// 	// $this->load->view('welcome_message');
+	// }
 
 	public function admin($adm_log = false) {
 
 		// Checking log key
 		$permit = $this->common->adm_log($adm_log);
 
-		// Initialize
-		$this->set_variable();
-		$pages = false;
+		// Initialize basic info
+		$basic = array(
+			'title' => 'Administrator Login',
+		);
+		$this->set_variable($basic);
 
+		// Render view
+		$pages = array('login/index');
 		$this->common->backend($pages, $permit);
 
 	}
