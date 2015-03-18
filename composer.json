@@ -1,0 +1,14 @@
+{
+    "name" : "Booci Composer",
+    "description" : "Composer for Booci",
+    "authors" : [
+        {
+            "name" : "Ayub Narwidian Adiputra",
+            "email" : "ayubna32@gmail.com"
+        }
+    ],
+    "minimum-stability" : "dev",
+    "require" : {
+		"components/bootstrap": "dev-master"
+    }
+}		

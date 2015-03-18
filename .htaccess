@@ -1,0 +1,16 @@
+DirectoryIndex index.php
+RewriteEngine on
+RewriteCond $1 !^(index.php|images|css|js|robots.txt|favicon.ico)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond $1 !^(401.shtml) 
+RewriteRule ^(.*)$ ./index.php?/$1 [L,QSA]
+
+<FilesMatch "\.(jpg|jpeg|png|gif|swf|css|js|woff|PNG)$">
+	FileETag None  
+    <ifModule mod_headers.c>  
+        Header unset ETag  
+        Header set Cache-Control "max-age=604800, public"
+        Header set Pragma "no-cache"  
+    </ifModule>  
+</FilesMatch>
