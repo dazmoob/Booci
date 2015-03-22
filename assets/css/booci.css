@@ -1,0 +1,12 @@
+div.divide-line {
+	display: block;
+    height: 2px;
+    border: 0;
+    border-top: 1px solid #cacaca;
+    margin: 3px 10px;
+    padding: 0 3px;
+}
+
+h3.box-title {
+	vertical-align: middle;
+}

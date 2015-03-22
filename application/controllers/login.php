@@ -18,8 +18,9 @@ class Login extends CI_Controller {
 	 * @see http://codeigniter.com/user_guide/general/urls.html
 	 */
 
-	function __constrcut() {
-		$this->load->model('user');
+	function __construct() {
+		parent::__construct();
+		$this->load->model('user_model');
 		$ci =& get_instance();
 	}
 
@@ -41,30 +42,35 @@ class Login extends CI_Controller {
 		// $this->load->view('welcome_message');
 	}
 
-	// public function index() {
-	// 	$filepath = APPPATH.'/config/access_level.yaml';
-	// 	$array = $this->yaml->parse_file($filepath);
-	// 	var_dump($array);
-	// 	// $this->load->view('welcome_message');
-	// }
-
+	// Admin login page
 	public function admin($adm_log = false) {
 
 		// Checking log key
 		$permit = $this->common->adm_log($adm_log);
 
-		// Initialize basic info
-		$basic = array(
-			'title' => 'Administrator Login',
-		);
-		$this->set_variable($basic);
+		if ($permit) :
 
-		// Render view
-		$pages = array('login/index');
-		$this->common->backend($pages, $permit);
+			// Initialize basic info
+			$basic = array(
+				'title' => 'Administrator Login',
+			);
+			$this->set_variable($basic);
 
+			// Render view
+			$param['pages'] = array('login/index');
+			$this->common->frontend($param);
+
+		endif;
+
+	}
+
+	// Admin authentication
+	public function admin_authentication() {
+		$filepath = APPPATH.'/config/access_level.yaml';
+		$array = $this->yaml->parse_file($filepath);
+		// $this->load->view('welcome_message');
 	}
 }
 
-/* End of file welcome.php */
-/* Location: ./application/controllers/welcome.php */	
+/* End of file login.php */
+/* Location: ./application/controllers/login.php */	
