@@ -21,15 +21,39 @@ class Login extends CI_Controller {
 	function __construct() {
 		parent::__construct();
 		$this->load->model('user_model');
-		$ci =& get_instance();
+		$this->ci =& get_instance();
 	}
 
 	/*
 		=========== Private Function =============
 	*/
 
-	private function set_variable($basic = false) {
+	private function setVariable ($basic = false) {
 		$this->basic = $this->common->basic_info(true, $basic);
+	}
+
+	private function validation ($type = false) {
+
+		$this->load->library('form_validation');
+		$status = true;
+
+		$this->form_validation->set_rules('username', 'Username', 'required|trim|xss_clean');
+		$this->form_validation->set_rules('password', 'Password', 'required|trim|xss_clean');
+
+		if ($this->form_validation->run() == FALSE) :
+			$status = false;
+		endif;
+
+		return $status;
+
+	}
+
+	private function lastAccess ($valid = false) {
+
+		$this->load->model('login_model');
+		// $_POST['username'] = $this->input->post('username');
+		// $_POST['username'] = $this->input->post('username');
+
 	}
 
 
@@ -38,12 +62,8 @@ class Login extends CI_Controller {
 		=========== Public Function =============
 	*/
 
-	public function index() {
-		// $this->load->view('welcome_message');
-	}
-
 	// Admin login page
-	public function admin($adm_log = false) {
+	public function user($adm_log = false) {
 
 		// Checking log key
 		$permit = $this->common->adm_log($adm_log);
@@ -54,21 +74,78 @@ class Login extends CI_Controller {
 			$basic = array(
 				'title' => 'Administrator Login',
 			);
-			$this->set_variable($basic);
+			$this->setVariable($basic);
 
 			// Render view
-			$param['pages'] = array('login/index');
-			$this->common->frontend($param);
+			$param['pages'] = array('login/user');
+			$this->common->userpage($param);
 
 		endif;
 
 	}
 
-	// Admin authentication
-	public function admin_authentication() {
-		$filepath = APPPATH.'/config/access_level.yaml';
-		$array = $this->yaml->parse_file($filepath);
-		// $this->load->view('welcome_message');
+	// Authentication
+	public function authentication() {
+
+		$this->load->library('encrypt');
+
+		$validation = $this->validation();
+
+		if ($validation) :
+
+			$username = $this->input->post('username');
+			$param = array(
+				'type' => 'where',
+				'select' => 'all',
+				'condition' => array('username' => $this->input->post('username'), 'state' => 'active')
+			);
+
+			$user = $this->user_model->check_login($param);
+			// $this->lastAccess($user);
+
+			if ($user) :
+
+				// Access and get YAML data
+				$filepath = APPPATH.'/config/access_level.yaml';
+				$array = $this->yaml->parse_file($filepath);
+				
+				// Set user access by compare user data and user access in YAML
+				$level = $this->user_model->level_super;
+				$user_level = $level[$user->level];
+				$user_access = $array[str_replace(' ', '_', strtolower($user_level))];
+
+				// Set user data after login
+				$data = array(
+					'data' => $user,
+					'access' => $user_access,
+					'log' => array('login_time' => date('Y-m-d H:i:s'))
+				);
+				$this->session->set_userdata('user', $data);
+
+				$param = array(
+					'alert' => 'success',
+					'notification' => 'Welcome '.$user->username,
+					'redirect' => site_url('profile/'.$user->username),
+				);
+				$this->common->redirect($param);
+
+			else :
+
+				$param = array(
+					'alert' => 'danger',
+					'notification' => 'Invalid username and password, try again'
+				);
+				$this->common->redirect($param);
+
+			endif;
+
+		endif;
+			
+	}
+
+	// Logout
+	public function logout () {
+		$this->session->sess_destroy();
 	}
 }
 

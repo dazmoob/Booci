@@ -57,13 +57,52 @@ class Common extends CI_Model {
 		login($action)
 		Used to check user is logging in or not
 	*/
-	public function login($action) {
+	public function login($action = false) {
 
 		// Initialize
 		$status = true;
 
 		// Check user logged in session
 		if ($this->session->userdata('user') == false) :
+
+			// Set error code and call error function
+			$code = array('status' => 'error', 'view' => 'frontend', 'type' => 404);
+			$this->error($code);
+			$status = false;
+
+		endif;
+
+		return $status;
+
+	}
+
+	/* 
+		access($action)
+		Used to check user is logging in or not
+	*/
+	public function access($action) {
+
+		// Initialize
+		$status = true;
+		$access = false;
+
+		// Check user logged in session
+		$usersession = $this->session->userdata('user');
+
+		// Set user access
+		if (!empty($usersession)) :
+			$useraccess = $usersession['access'];
+		endif;
+
+		// Check user access
+		if (!empty($useraccess)) :
+
+			if (in_array('c_user', $useraccess))
+				$access = true;
+
+		endif; 
+
+		if ($usersession == false || $access == false) :
 
 			// Set error code and call error function
 			$code = array('status' => 'error', 'view' => 'frontend', 'type' => 404);
@@ -85,6 +124,7 @@ class Common extends CI_Model {
 		// Get and fetch data from web table
 		$query = $this->db->get('web');
 		$data = $query->row();
+		$basic = !empty($basic['basic']) ? $basic['basic'] : false;
 
 		// If used for view
 		if ($view) :
@@ -92,7 +132,7 @@ class Common extends CI_Model {
 			$raw = $query->row();
 
 			// Check web title info
-			$title = !empty($basic) ? $basic['title'] : $raw->title;
+			$title = !empty($basic['title']) ? $basic['title'] : $raw->title;
 
 			$data = array(
 				'name' => $raw->name,
@@ -105,6 +145,38 @@ class Common extends CI_Model {
 			);
 
 		endif;
+		
+		return $data;
+
+	}
+
+	/* 
+		backend_header($header)
+		Used to set page header
+	*/
+	public function backend_header($header = false) {
+
+		$data = false;
+
+		// If used for view
+		if (!empty($header['header'])) 
+			$data = $header['header'];
+		
+		return $data;
+
+	}
+
+	/* 
+		backend_breadcrumb($breadcrumb)
+		Used to set page breadcrumb
+	*/
+	public function backend_breadcrumb($breadcrumb = false) {
+
+		$data = false;
+
+		// If used for view
+		if (!empty($breadcrumb['breadcrumb'])) 
+			$data = $breadcrumb['breadcrumb'];
 		
 		return $data;
 
@@ -135,6 +207,18 @@ class Common extends CI_Model {
 	}
 
 	/* 
+		userpage($param)
+		Used to show single user page for login/regsiter view
+	*/
+	public function userpage($param = false) {
+
+		if (!empty($param['pages'])) :
+			$this->load->view('userpage/login', $param);
+		endif;
+
+	}
+
+	/* 
 		error($code = array('status' => 'error', 'view' => 'frontend|backend', 'type' => ''))
 		Used to show error page view
 	*/
@@ -151,7 +235,7 @@ class Common extends CI_Model {
 					$error['title'] = 'Page not found';
 					$error['message'] = 'Oops, sorry, this page not found or no longer exist';
 					$error['notes'] = 'Please try another page';
-					$error['view'] = $code['view'];
+					$error['view'] = 'error/'.$code['view'];
 					break;
 				
 				default:
@@ -159,7 +243,7 @@ class Common extends CI_Model {
 					$error['title'] = 'Something bad happened';
 					$error['message'] = 'We will find to fix this error';
 					$error['notes'] = 'If you need something, feel free to contact us <a title="Send Message" href="'.site_url('messages/send').'">here</a>';
-					$error['view'] = 'frontend';
+					$error['view'] = 'error/frontend';
 					break;
 			endswitch;
 
@@ -167,10 +251,56 @@ class Common extends CI_Model {
 
 		// Check error status
 		if (!empty($code['status']) && $code['status'] == 'error') :
-			$this->load->view('error/index', $error);
+			$this->load->view($error['view'], $error);
 		endif;
 
 		return false;
+
+	}
+
+	/* 
+		redirect($param)
+		Used to redirect user from one page to another page
+	*/
+	public function redirect($param = false) {
+
+		if (!empty($param['notification'])) :
+			$this->session->set_flashdata($param);
+		endif;
+
+		if (!empty($param['redirect'])) :
+			redirect($param['redirect']);
+		else :
+
+			if (!empty($_SERVER['HTTP_REFERER']))
+				redirect($_SERVER['HTTP_REFERER']);
+			else
+				redirect(site_url());
+
+		endif;
+
+	}
+
+	/* 
+		check_param($param)
+		Used to check paramater in URL
+	*/
+	public function check_param($param) {
+
+		// Initialize
+		$status = true;
+
+		// Check param exist
+		if (empty($param)) :
+
+			// Set error code and call error function
+			$code = array('status' => 'error', 'view' => 'frontend', 'type' => 504);
+			$this->error($code);
+			$status = false;
+
+		endif;
+
+		return $status;
 
 	}
 

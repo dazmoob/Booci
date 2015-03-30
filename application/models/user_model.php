@@ -66,17 +66,36 @@ class User_model extends CI_Model {
 			);
 	*/
 
+	public $level_super = array(
+		'' => 'Choose user level',
+		'5' => 'User',
+		'4' => 'Writer',
+		'3' => 'Editor',
+		'2' => 'Admin',
+		'1' => 'Super Admin'
+	);
+
+	public $level = array(
+		'' => 'Choose user level',
+		'5' => 'User',
+		'4' => 'Writer',
+		'3' => 'Editor',
+		'2' => 'Admin'
+	);
+
 	private function select($param = false) {
 
 		if (!empty($param['select'])) :
 
-			switch ($param['select']) :
+			$select = $param['select'];
+
+			switch ($select) :
 				case 'all':
 					$this->db->select('*');
 					break;
 				
 				default:
-					$this->db->select('*');
+					$this->db->select($select);
 					break;
 			endswitch;
 
@@ -107,6 +126,9 @@ class User_model extends CI_Model {
 
 		if (!empty($param['type']) && !empty($param['condition'])) :
 
+			$type = $param['type'];
+			$condition = $param['condition'];
+
 			switch ($type) :
 				case 'where':
 					$this->db->where($condition);
@@ -133,44 +155,68 @@ class User_model extends CI_Model {
 
 	}
 
-	private function limit($start = 0, $limit = 0) {
-		$this->db->limit($start, $limit);
+	private function limit($param = false) {
+
+		$start = 0; $limit = 0;
+
+		if (!empty($param['start'])) $start = $param['start'];
+		if (!empty($param['limit'])) $limit = $param['limit'];
+
+		$this->db->limit($limit, $start);
 	}
 
-	private function set_post($restrict = false) {
+	private function order_by($param = false) {
+		if (!empty($param['order_by']))
+			$this->db->order_by($param['order_by']);
+	}
 
-		if ($restrict == 'update') :
+	private function set_post($param = false) {
 
-			$data['name'] = $this->input->post['name'];
-			$data['website'] = $this->input->post['website'];
-			$data['facebook'] = $this->input->post['facebook'];
-			$data['twitter'] = $this->input->post['twitter'];
-			$data['gmail'] = $this->input->post['gmail'];
-			$data['notes'] = $this->input->post['notes'];
+		if ($param['restrict'] == 'update') :
 
-		elseif ($restrict == 'password') :
-			$data['password'] = $this->input->post['password'];
-		elseif ($restrict == 'upload') :
-			$data['picture'] = $this->input->post['picture'];
-		elseif ($restrict == 'level') :
-			$data['level'] = $this->input->post['level'];
-		elseif ($restrict == 'state') :
-			$data['state'] = $this->input->post['state'];
+			$data['name'] = $this->input->post('name');
+			$data['website'] = $this->input->post('website');
+			$data['facebook'] = $this->input->post('facebook');
+			$data['twitter'] = $this->input->post('twitter');
+			$data['google'] = $this->input->post('google');
+			$data['notes'] = $this->input->post('notes');
+			$data['updated_time'] = date('Y-m-d H:i:s');
+
+		elseif ($param['restrict'] == 'password') :
+
+			$data['password'] = $this->input->post('password');
+			$data['updated_time'] = date('Y-m-d H:i:s');
+
+		elseif ($param['restrict'] == 'upload') :
+
+			$data['picture'] = $this->input->post('picture');
+			$data['picture_path'] = $this->input->post('picture_path');
+			$data['updated_time'] = date('Y-m-d H:i:s');
+
+		elseif ($param['restrict'] == 'level') :
+
+			$data['level'] = $this->input->post('level');
+			$data['updated_time'] = date('Y-m-d H:i:s');
+
+		elseif ($param['restrict'] == 'state') :
+			
+			$data['state'] = $this->input->post('state');
+			$data['updated_time'] = date('Y-m-d H:i:s');
 
 		else :
 
-			$data['username'] = $this->input->post['username'];
-			$data['name'] = $this->input->post['name'];
-			$data['email'] = $this->input->post['email'];
-			$data['website'] = $this->input->post['website'];
-			$data['facebook'] = $this->input->post['facebook'];
-			$data['twitter'] = $this->input->post['twitter'];
-			$data['gmail'] = $this->input->post['gmail'];
-			$data['password'] = $this->input->post['password'];
-			$data['level'] = $this->input->post['level'];
-			$data['state'] = $this->input->post['state'];
-			$data['datetime'] = $this->input->post['datetime'];
-			$data['notes'] = $this->input->post['notes'];
+			$data['username'] = $this->input->post('username');
+			$data['name'] = $this->input->post('name');
+			$data['email'] = $this->input->post('email');
+			$data['website'] = $this->input->post('website');
+			$data['facebook'] = $this->input->post('facebook');
+			$data['twitter'] = $this->input->post('twitter');
+			$data['google'] = $this->input->post('google');
+			$data['password'] = $this->input->post('password');
+			$data['level'] = $this->input->post('level');
+			$data['state'] = 'Pending';
+			$data['created_time'] = date('Y-m-d H:i:s');
+			$data['notes'] = $this->input->post('notes');
 
 		endif;
 
@@ -185,18 +231,21 @@ class User_model extends CI_Model {
 		$query = $this->db->get('user');
 		$data = $query->row();
 
+		$_POST['id'] = $data->id;
 		$_POST['username'] = $data->username;
 		$_POST['name'] = $data->name;
 		$_POST['email'] = $data->email;
 		$_POST['picture'] = $data->picture;
+		$_POST['picture_path'] = $data->picture_path;
 		$_POST['website'] = $data->website;
 		$_POST['facebook'] = $data->facebook;
 		$_POST['twitter'] = $data->twitter;
-		$_POST['gmail'] = $data->gmail;
+		$_POST['google'] = $data->google;
 		$_POST['password'] = $data->password;
 		$_POST['level'] = $data->level;
 		$_POST['state'] = $data->state;
-		$_POST['datetime'] = $data->datetime;
+		$_POST['created_time'] = $data->created_time;
+		$_POST['updated_time'] = $data->updated_time;
 		$_POST['notes'] = $data->notes;
 
 		return $data;
@@ -208,25 +257,47 @@ class User_model extends CI_Model {
 		$this->select($param);
 		$this->condition($param);
 		$this->limit($param);
-		$this->db->order_by($param);
+		$this->order_by($param);
 		$query = $this->db->get('user');
 		return $query->result();
 
 	}
 
 	public function insert($param = false) {
-		$this->condition($param);
-		$this->db->insert_id('user', $this->set_post());
+		$this->db->insert('user', $this->set_post());
+		return $this->db->insert_id();
 	}
 
 	public function update($param = false) {
 		$this->condition($param);
-		$this->db->update('user', $this->set_post($param));
+		return $this->db->update('user', $this->set_post($param));
 	}
 
 	public function delete($param = false) {
 		$this->condition($param);
-		$this->db->delete('user');
+		return $this->db->delete('user');
+	}
+
+	/* 
+		=== Others Section ======================================
+		Others function that used for some condition :
+		check_login
+	*/
+
+	public function check_login($param = false) {
+
+		$this->select($param);
+		$this->condition($param);
+		$query = $this->db->get('user');
+		$row = $query->row();
+
+		if (!empty($row)) :
+			$row = ($this->input->post('password') == $this->encrypt->decode($row->password)) 
+				? $row : false;
+		endif;
+
+		return $row;
+
 	}
 
 }

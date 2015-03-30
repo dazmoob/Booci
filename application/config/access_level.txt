@@ -1,0 +1,8 @@
+Access Control :
+
+- c_xxx	: Controller XXX
+- m_xxx	: Method XXX
+- v_xxx	: View XXX
+- d_xxx	: Access in Model XXX
+- pm_xx	: Access in Method XX
+- vm_xx	: Access in View XX

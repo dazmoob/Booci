@@ -41,8 +41,14 @@
 $route['default_controller'] = "login";
 $route['404_override'] = '';
 
-// Backend
-$route['login/admin/(:any)'] = 'login/admin/$1';
+// Backend - User
+$route['login/user/(:any)'] = 'login/user/$1';
+
+// Backend - Profile
+$route['profile/update/(:any)'] = 'profile/update/$1';
+$route['profile/(:any)/edit'] = 'profile/edit/$1';
+$route['profile/(:any)'] = 'profile/index/$1';
+$route['profile/uploadPicture'] = 'profile/uploadPicture';
 
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';

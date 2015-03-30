@@ -1,7 +1,8 @@
 super_admin : 
-
+	- c_user
+	- d_admin
 admin : 
-
+	- c_user
 editor : 
 
 writer : 

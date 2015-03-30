@@ -1,12 +1,188 @@
+table#user-data > tbody > tr > td {
+	vertical-align: middle;
+}
+
+table#user-data > tbody > tr > td:has(img) {
+	text-align: center;
+}
+
+table#user-data > tbody > tr > td > img {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+}
+
 div.divide-line {
 	display: block;
     height: 2px;
     border: 0;
-    border-top: 1px solid #cacaca;
+    border-top: 1px solid #eaeaea;
     margin: 3px 10px;
     padding: 0 3px;
 }
 
 h3.box-title {
 	vertical-align: middle;
+}
+
+label > span.sign-danger {
+	color: red;
+}
+
+.fa-stack-3x {
+	font-size: 3em;
+	position: absolute;
+	left: 0;
+	width: 100%;
+	text-align: center;
+}
+
+.fa-stack-1-5x {
+	font-size: 1.5em;
+	position: absolute;
+	left: 0;
+	width: 100%;
+	text-align: center;
+}
+
+.fa-stack-lg {
+	position: relative;
+	display: inline-block;
+	width: 3em;
+	height: 3em;
+	line-height: 3em;
+	vertical-align: middle;
+}
+
+.fa-stack-1-5x.top-middle {
+	top: 0.5em;
+}
+
+div.box-title {
+	vertical-align: middle;
+}
+
+.box-title > h3 {
+	font-size: 18px;
+	margin-top: 0;
+	margin-bottom: 0;
+	margin-left: 5px;
+}
+
+.box-title > h5 {
+	color: #8a8a8a;
+	margin-top: 3px;
+	margin-bottom: 0;
+	margin-left: 5px;
+}
+
+.form-control.readonly {
+	border: none;
+	padding: 0;
+	vertical-align: middle;
+}
+
+.btn.btn-label {
+	margin-top: 25px;
+}
+
+.clicked {
+	cursor: pointer;
+}
+
+.profile-picture {
+	margin: 10px auto;
+	text-align: center;
+}
+
+.img-border {
+	border: 3px dashed #cacaca;
+	padding: 3px;
+}
+
+.upload-notes {
+	text-align: center;
+	margin-bottom: 5px;
+}
+
+div.user-description {
+	font-size: 17px;
+	margin-bottom: 0;
+	color: #fafafa;
+}
+
+div.user-description > p {
+	padding: 10px inherit;
+	background: #3c8dbc;
+	margin-bottom: 0;
+	margin-top: 10px;
+}
+
+div.user-description > p > small {
+	display: block;
+}
+
+div.user-description > div.user-submenu {
+	padding: 20px inherit;
+	font-size: 14px;
+}
+
+ul.activity-list {
+	font-size: 14px;
+	text-align: left;
+	list-style: none;
+	background-color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+ul.activity-list > li.header {
+	padding-top: 10px;
+	padding-bottom: 5px;
+}
+
+ul.activity-list > li > ul.menu > li {
+	border-bottom: 1px solid #eaeaea;
+	border-top: 1px solid #eaeaea;
+	padding: 5px inherit;
+}
+
+ul.activity-list > li > ul.menu > li > a > h4 {
+	padding: 0;
+	margin: 0 0 0 45px;
+	color: #444444;
+	font-size: 15px;
+	position: relative;
+}
+
+ul.activity-list > li > ul.menu > li > a > h4 > small {
+	color: #999999;
+	font-size: 10px;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+}
+
+ul.activity-list > li > ul.menu > li > a > p {
+	margin: 0 0 0 45px;
+	font-size: 12px;
+	color: #888888;
+}
+
+ul.activity-list > li > ul.menu {
+	padding-left: 0px;
+}
+
+ul.activity-list > li > ul.menu > li > a > div > img.img-circle {
+	margin: auto 10px auto auto;
+	width: 40px;
+	height: 40px;
+}
+
+ul.activity-list > li > ul > li {
+	list-style: none;
+}
+
+ul.treeview-menu > li {
+	padding: 5px inherit;
 }
