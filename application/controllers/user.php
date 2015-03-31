@@ -120,9 +120,13 @@ class User extends CI_Controller {
 				'limit' => 10,
 				'order_by' => 'username desc'
 			];
+
+			$param['level'] = $this->user_model->level_super;
 			
-			if ($this->userdata->level != 1) 
+			if ($this->userdata->level != 1) :
 				$user['condition'] = array('level !=' => 1);
+				$param['level'] = $this->user_model->level;
+			endif;
 
 			$param['user'] = $this->user_model->get_all($user);
 

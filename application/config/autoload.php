@@ -64,7 +64,7 @@ $autoload['libraries'] = array('composer', 'database', 'session', 'yaml');
 |	$autoload['helper'] = array('url', 'file');
 */
 
-$autoload['helper'] = array('url', 'form', 'excerpt');
+$autoload['helper'] = array('url', 'form', 'excerpt', 'clean');
 
 
 /*

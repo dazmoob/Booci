@@ -15,6 +15,7 @@
 
 <script type="text/javascript" src="<?php echo site_url('assets/js/bootstrap.min.js') ?>"></script>
 <script type="text/javascript" src="<?php echo site_url('assets/js/app.min.js') ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/bootbox.min.js') ?>"></script>
 <script type="text/javascript" src="<?php echo site_url('assets/js/booci.js') ?>"></script>
 
 <!-- Javascript Controller -->

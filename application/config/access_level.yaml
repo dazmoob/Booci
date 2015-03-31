@@ -1,6 +1,7 @@
 super_admin : 
 	- c_user
 	- d_admin
+	- vm_super
 admin : 
 	- c_user
 editor : 

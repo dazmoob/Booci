@@ -2,7 +2,7 @@ table#user-data > tbody > tr > td {
 	vertical-align: middle;
 }
 
-table#user-data > tbody > tr > td:has(img) {
+.center {
 	text-align: center;
 }
 
