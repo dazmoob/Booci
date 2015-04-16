@@ -162,7 +162,8 @@ class User_model extends CI_Model {
 		if (!empty($param['start'])) $start = $param['start'];
 		if (!empty($param['limit'])) $limit = $param['limit'];
 
-		$this->db->limit($limit, $start);
+		if ($limit != 0) 
+			$this->db->limit($limit, $start);
 	}
 
 	private function order_by($param = false) {
@@ -224,29 +225,33 @@ class User_model extends CI_Model {
 
 	}
 
-	public function get_one($param = false) {
+	public function get_one($param = false, $no_post = false) {
 
 		$this->select($param);
 		$this->condition($param);
 		$query = $this->db->get('user');
 		$data = $query->row();
 
-		$_POST['id'] = $data->id;
-		$_POST['username'] = $data->username;
-		$_POST['name'] = $data->name;
-		$_POST['email'] = $data->email;
-		$_POST['picture'] = $data->picture;
-		$_POST['picture_path'] = $data->picture_path;
-		$_POST['website'] = $data->website;
-		$_POST['facebook'] = $data->facebook;
-		$_POST['twitter'] = $data->twitter;
-		$_POST['google'] = $data->google;
-		$_POST['password'] = $data->password;
-		$_POST['level'] = $data->level;
-		$_POST['state'] = $data->state;
-		$_POST['created_time'] = $data->created_time;
-		$_POST['updated_time'] = $data->updated_time;
-		$_POST['notes'] = $data->notes;
+		if ($no_post == false) :
+
+			$_POST['id'] = $data->id;
+			$_POST['username'] = $data->username;
+			$_POST['name'] = $data->name;
+			$_POST['email'] = $data->email;
+			$_POST['picture'] = $data->picture;
+			$_POST['picture_path'] = $data->picture_path;
+			$_POST['website'] = $data->website;
+			$_POST['facebook'] = $data->facebook;
+			$_POST['twitter'] = $data->twitter;
+			$_POST['google'] = $data->google;
+			$_POST['password'] = $data->password;
+			$_POST['level'] = $data->level;
+			$_POST['state'] = $data->state;
+			$_POST['created_time'] = $data->created_time;
+			$_POST['updated_time'] = $data->updated_time;
+			$_POST['notes'] = $data->notes;
+
+		endif;
 
 		return $data;
 

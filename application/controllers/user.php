@@ -43,16 +43,17 @@ class User extends CI_Controller {
 	private function validation($type = false) {
 
 		$this->load->library('form_validation');
-		$status = true;
 
 		if ($type == 'update') :
 
-			$this->form_validation->set_rules('name', 'Name', 'required|trim|xss_clean|alpha_numeric');
+			$this->form_validation->set_rules('name', 'Name', 'required|trim|xss_clean');
 			$this->form_validation->set_rules('website', 'Website', 'prep_url|trim|xss_clean');
 			$this->form_validation->set_rules('facebook', 'Facebook', 'prep_url|trim|xss_clean');
 			$this->form_validation->set_rules('twitter', 'Twitter', 'prep_url|trim|xss_clean');
 			$this->form_validation->set_rules('google', 'Google', 'prep_url|trim|xss_clean');
 			$this->form_validation->set_rules('notes', 'Notes', 'trim|xss_clean|alpha_dash');
+			
+			$param['redirect'] = site_url('user/'.$param.'/edit');
 
 		elseif ($type == 'password') :
 
@@ -60,13 +61,17 @@ class User extends CI_Controller {
 			$this->form_validation->set_rules('password', 'Password', 'required|trim|xss_clean|min_length[6]');
 			$this->form_validation->set_rules('retype_password', 'Retype Password', 'required|trim|xss_clean|min_length[6]|matches[password]');
 
+			$param['redirect'] = site_url('user/'.$param.'/edit');
+
 		elseif ($type == 'level') :
 
 			$this->form_validation->set_rules('level', 'Access Level', 'required|trim|xss_clean|integer');
+			$param['redirect'] = site_url('user');
 
 		elseif ($type == 'state') :
 
 			$this->form_validation->set_rules('state', 'Access State', 'required|trim|xss_clean|alpha');
+			$param['redirect'] = site_url('user');
 
 		else :
 
@@ -79,23 +84,47 @@ class User extends CI_Controller {
 			$this->form_validation->set_rules('google', 'Google', 'prep_url|trim|xss_clean');
 			$this->form_validation->set_rules('level', 'Access Level', 'required|trim|xss_clean|integer');
 			$this->form_validation->set_rules('notes', 'Notes', 'trim|xss_clean|alpha_dash');
-			$this->form_validation->set_rules('password', 'Password', 'required|trim|xss_clean|min_length[6]');
-			$this->form_validation->set_rules('retype_password', 'Retype Password', 'required|trim|xss_clean|min_length[6]|matches[password]');
+
+			$param['redirect'] = site_url('user');
 
 		endif;
 
 
 		if ($this->form_validation->run() == FALSE) :
-			$status = false;
-		endif;
+			
+			$param['alert'] = 'danger';
+			$param['notification'] = validation_errors();
 
-		return $status;
+			$this->common->redirect($param);
+		
+		endif;
 
 	}
 
 	private function password() {
 		$this->load->library('encrypt');
 		$_POST['password'] = $this->encrypt->encode($this->input->post('password'));
+	}
+
+	private function check_edit($username = false) {
+
+		$param = array('type' => 'where', 'condition' => array('username' => $username));
+		$this->userprofile = $this->user_model->get_one($param, true);
+		$userdata = $this->userdata;
+
+		$status = true;
+
+		if ($userdata->level > $this->userprofile->level) :
+
+			// Set error code and call error function
+			$code = array('status' => 'error', 'view' => 'backend', 'type' => 404);
+			$this->common->error($code);
+			$status = false;
+
+		endif;
+
+		return $status;
+
 	}
 
 	/*
@@ -107,8 +136,20 @@ class User extends CI_Controller {
 		if ($this->access) :
 
 			// Initialize basic info
-			$basic = array('title' => 'User List');
-			$this->set_variable($basic);
+			$variable = [
+				'basic' => array('title' => 'User List'),
+				'header' => [
+					'title' => 'User Management',
+					'description' => 'Users list in Booci',
+				],
+				'breadcrumb' => [
+					'one' => 'User',
+					'one_link' => site_url('user'),
+					'icon' => 'users',
+					'two' => 'List User'
+				]
+			];
+			$this->set_variable($variable);
 
 			// Set additional CSS and JS
 			$this->additional_css = array('assets/plugins/datatables/dataTables.bootstrap.css');
@@ -143,10 +184,20 @@ class User extends CI_Controller {
 		if ($this->access) :
 
 			// Initialize basic info
-			$basic = array(
-				'title' => 'Add New User',
-			);
-			$this->set_variable($basic);
+			$variable = [
+				'basic' => array('title' => 'Add New User'),
+				'header' => [
+					'title' => 'User Management',
+					'description' => 'Create a user',
+				],
+				'breadcrumb' => [
+					'one' => 'User',
+					'one_link' => site_url('user'),
+					'icon' => 'users',
+					'two' => 'Create New User'
+				]
+			];
+			$this->set_variable($variable);
 
 			// Render view
 			$param['pages'] = array('user/add');
@@ -160,14 +211,112 @@ class User extends CI_Controller {
 
 		$validation = $this->validation();
 
-		if ($validation) :
+		// Load random string library and set random password
+		$this->load->library('random');
+		$password = $this->random->get_random();
+		$_POST['password'] = $password;
+		$this->password();
 
-			$this->password();
-			$this->user_model->insert();
+		if ($this->user_model->insert()) :
+
+			$param = [
+				'alert' => 'success',
+				'notification' => 'Success create '.$this->input->post('username').' with password '.$password,
+				'redirect' => site_url('user/add'),
+			];
+
+		else :
+
+			$param = [
+				'alert' => 'danger',
+				'notification' => 'Something wrong when add new user, please try again !',
+				'redirect' => site_url('user/add'),
+			];
 
 		endif;
 
-		$this->common->redirect();
+		$this->common->redirect($param);
+
+	}
+
+	public function edit($username = false) {
+
+		// Check user parameter
+		$param = $this->common->check_param($username);
+
+		if ($this->access && $param) :
+
+			// Check if user open right username
+			$edit = $this->check_edit($username);
+
+			if ($edit) :
+
+				// Initialize basic info
+				$variable = [
+					'basic' => array('title' => 'Edit '.$username),
+					'header' => [
+						'title' => 'User Management',
+						'description' => 'Edit '.$username.' data',
+					],
+					'breadcrumb' => [
+						'one' => 'User',
+						'one_link' => site_url('user'),
+						'icon' => 'users',
+						'two' => 'Edit User'
+					]
+				];
+				$this->set_variable($variable);
+
+				// Render view
+				$param = array();
+				$param['user'] = $this->userprofile;
+				$param['pages'] = array('user/edit');
+				$this->common->backend($param);
+
+			endif;
+
+		endif;
+
+	}
+
+	public function update($username = false) {
+
+		// Check user parameter
+		$param = $this->common->check_param($username);
+
+		if ($this->access && $param) :
+
+			$validation = $this->validation('update');
+
+			// Load random string library and set random password
+			$param = array();
+			$param = [
+				'restrict' => 'update',
+				'type' => 'where',
+				'condition' => array('username' => $username)
+			];
+
+			if ($this->user_model->update($param)) :
+
+				$param = [
+					'alert' => 'success',
+					'notification' => 'Success update '.$this->input->post('username').' data',
+					'redirect' => site_url('user/'.$username.'/edit'),
+				];
+
+			else :
+
+				$param = [
+					'alert' => 'danger',
+					'notification' => 'Something wrong when update user data, please try again !',
+					'redirect' => site_url('user/'.$username.'/edit'),
+				];
+
+			endif;
+
+			$this->common->redirect($param);
+
+		endif;
 
 	}
 }

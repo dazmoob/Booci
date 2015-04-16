@@ -1,4 +1,4 @@
-var uploadUrl = project + "profile/uploadPicture";
+var uploadUrl = project + "/profile/uploadPicture";
 
 $("#profile-picture").fileinput({
     uploadUrl: uploadUrl,
@@ -13,7 +13,7 @@ $('#profile-picture').on('fileuploaderror', function(event, data, previewId, ind
 
 $('#profile-picture').on('fileuploaded', function(event, data, previewId, index) {
     var form = data.form, files = data.files, extra = data.extra, response = data.response, reader = data.reader;
-    $('img.profile-picture').attr('src', project + response.file);
+    $('img.profile-picture').attr('src', project + '/' + response.file);
     $('button#cancel-upload').html('').html('<i class="fa fa-remove"></i>&nbsp; Close');
 });
 

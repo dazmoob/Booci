@@ -8,6 +8,8 @@ if ( ! function_exists('excerpt_words')) {
 
 		if (!empty($text)) :
 
+			$text = strip_tags($text);
+
 			$text_raw = explode(' ', $text);
 			$i = 1; $excerpt = ''; $status = true;
 			foreach ($text_raw as $key => $value) :
@@ -16,6 +18,9 @@ if ( ! function_exists('excerpt_words')) {
 				endif;
 				$i++;
 			endforeach;
+
+			if (count($text_raw) > $limit)
+				$excerpt = $excerpt.' ...';
 
 		endif;
 

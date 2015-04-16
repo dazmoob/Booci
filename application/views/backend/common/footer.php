@@ -2,7 +2,7 @@
 <footer class="main-footer">
 	<!-- To the right -->
 	<div class="pull-right hidden-xs">
-		<?php echo $this->basic['name']; ?>
+		<?php echo $this->basic['name']; ?> : Admin-LTE 2 Themes modified by Opreklab
 	</div>
 	<!-- Default to the left --> 
 	<strong>

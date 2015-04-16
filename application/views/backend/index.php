@@ -3,6 +3,7 @@
 <head>
 
 	<!-- Page title -->
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 	<meta charset="UTF-8">
     <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
 	<title><?php echo $this->basic['title']; ?></title>
@@ -10,7 +11,7 @@
 	<?php $this->load->view('backend/common/css'); ?>
 
 </head>
-<body class="skin-blue">
+<body id="project-name" class="skin-blue" data-name="<?php echo strtolower($this->basic['name']); ?>">
 
 	<div class="wrapper">
 
@@ -31,6 +32,7 @@
 				<div class="row">
 
 				<!-- Render Pages -->
+				<?php echo $this->load->view('backend/common/notification'); ?>
 
 				<?php 
 					if (!empty($pages)) :

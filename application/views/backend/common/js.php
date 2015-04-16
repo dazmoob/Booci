@@ -1,6 +1,6 @@
 <!-- Javascript Settings -->
-<script type="text/javascript" src="<?php echo site_url('assets/js/jquery-1.11.2.min.js') ?>"></script>
-<script type="text/javascript" src="<?php echo site_url('assets/js/common.js') ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/jquery-1.11.2.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/common.js'); ?>"></script>
 
 <!-- Additional Javascript -->
 <?php 
@@ -13,10 +13,10 @@
 	endif; 
 ?>
 
-<script type="text/javascript" src="<?php echo site_url('assets/js/bootstrap.min.js') ?>"></script>
-<script type="text/javascript" src="<?php echo site_url('assets/js/app.min.js') ?>"></script>
-<script type="text/javascript" src="<?php echo site_url('assets/js/bootbox.min.js') ?>"></script>
-<script type="text/javascript" src="<?php echo site_url('assets/js/booci.js') ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/bootstrap.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/app.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/bootbox.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo site_url('assets/js/booci.js'); ?>"></script>
 
 <!-- Javascript Controller -->
 <?php if (!empty($this->uri->segment(1))) : ?>

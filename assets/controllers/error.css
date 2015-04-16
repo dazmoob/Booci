@@ -1,0 +1,36 @@
+body {
+	background-color: #EEEEEE;
+	text-align: center;
+}
+
+h1 {
+	font-size: 120px;
+	color: #3e3e3e;
+	font-family: Bebas;
+}
+
+h2 {
+	font-size: 26px;
+	color: #5a5a5a;
+	font-family: OpenSans;
+	text-transform: capitalize;
+}
+
+h1 .text-underline {
+	text-decoration: underline;
+}
+
+h1 > .fa {
+	color: #D64541;
+	font-size: 200px;
+}
+
+.message {
+	font-size: 20px;
+	margin-top: 20px;
+}
+
+.wrapper {
+	margin-top: 100px;
+	margin-bottom: 100px;
+}

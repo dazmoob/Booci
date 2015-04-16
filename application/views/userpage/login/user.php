@@ -8,6 +8,10 @@
 
 		<p class="login-box-msg">Sign in to start your session</p>
 
+		<div class="row">
+			<?php echo $this->load->view('backend/common/notification'); ?>
+		</div>
+
 		<?php echo form_open('login/authentication'); ?>
 			<div class="form-group has-feedback">
 				<input name="username" type="text" class="form-control" placeholder="Username">

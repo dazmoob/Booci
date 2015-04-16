@@ -2,10 +2,24 @@ super_admin :
 	- c_user
 	- d_admin
 	- vm_super
+	- vm_article
+	- pm_article
+	- c_settings
+	- vm_admlog
+
 admin : 
 	- c_user
+	- pm_article
+	- vm_article
+	- c_user
+	- c_settings
+
 editor : 
+	- pm_article
+	- vm_article
 
 writer : 
+	- pm_article
+	- vm_article
 
 user : 

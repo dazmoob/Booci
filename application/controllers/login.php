@@ -93,11 +93,12 @@ class Login extends CI_Controller {
 
 		if ($validation) :
 
+
 			$username = $this->input->post('username');
 			$param = array(
 				'type' => 'where',
 				'select' => 'all',
-				'condition' => array('username' => $this->input->post('username'), 'state' => 'active')
+				'condition' => array('username' => $this->input->post('username'), 'state' => 'Active')
 			);
 
 			$user = $this->user_model->check_login($param);
@@ -145,7 +146,24 @@ class Login extends CI_Controller {
 
 	// Logout
 	public function logout () {
+
+		// Get userdata
+		$usersession = $this->session->userdata('user');
+		$userdata = $usersession['data'];
+
+		// Get adm_log keyword
+		$basic = $this->common->basic_info();
+
+		// Destroy all session
 		$this->session->sess_destroy();
+
+		$param = array(
+			'alert' => 'success',
+			'notification' => 'See you soon '.$userdata->username,
+			'redirect' => site_url('login/user/'.$basic->adm_log)
+		);
+		$this->common->redirect($param);
+
 	}
 }
 

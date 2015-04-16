@@ -64,20 +64,14 @@
 			</div>
 			<div class="box-footer">
 				<div class="row">
-					<div class="col-md-6 col-lg-6 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label>Password <span class="sign-danger">*</span></label>
-							<input name="password" type="password" class="form-control" placeholder="Password">
-						</div>
-					</div>
-					<div class="col-md-6 col-lg-6 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label>Retype Password <span class="sign-danger">*</span></label>
-							<input name="retype_password" type="password" class="form-control"placeholder="Retype Password">
+					<div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
+						<div class="pull-right">
+							<button type="submit" class="btn btn-primary">
+								<i class="fa fa-check-circle text-white"></i> &nbsp;Create
+							</button>
 						</div>
 					</div>
 				</div>
-				<button type="submit" class="btn btn-primary">Submit</button>
 			</div>
 		</form>
 	</div><!-- /.box -->

@@ -207,7 +207,7 @@ class Profile extends CI_Controller {
 
 	public function uploadPicture() {
 
-		$config['upload_path'] = './images/profiles/';
+		$config['upload_path'] = './media/profile/';
 		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG';
 		$config['max_size']	= '100';
 		$config['max_width'] = '160';
@@ -232,7 +232,7 @@ class Profile extends CI_Controller {
 
 			// Upload file data
 			$upload_file = $this->upload->data();
-			$upload_filename = 'images/profiles/'.$upload_file['client_name'];
+			$upload_filename = 'media/profile/'.$upload_file['client_name'];
 
 			// Set POST for user upload picture
 			$_POST['picture'] = $upload_file['client_name'];

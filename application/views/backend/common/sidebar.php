@@ -39,53 +39,76 @@
 			<li class="header">BLOG / INFO</li>
 
 			<!-- Optionally, you can add icons to the links -->
-			<li>
-				<a href="#">
-					<i class="fa fa-file-text-o"></i>
-					<span>Link</span>
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<i class="fa fa-file-text-o"></i>
-					<span>Another Link</span>
-				</a>
-			</li>
-			<li class="treeview">
-				<a href="#">
-					<span>Multilevel</span> 
-					<i class="fa fa-angle-left pull-right"></i>
-				</a>
-				<ul class="treeview-menu">
-					<li><a href="#">Link in level 2</a></li>
-					<li><a href="#">Link in level 2</a></li>
-				</ul>
-			</li>
+			<?php if (in_array('vm_article', $this->useraccess)) : ?>
+				<li class="treeview">
+					<a href="<?php echo site_url('article/all'); ?>">
+						<i class="fa fa-file-text-o"></i>
+						<span>Article</span>
+						<i class="fa fa-angle-left pull-right"></i>
+					</a>
+					<ul class="treeview-menu">
+						<li>
+							<a href="<?php echo site_url('article/all'); ?>">
+								<i class="fa fa-list-alt"></i>
+								List
+							</a>
+						</li>
+						<li>
+							<a href="<?php echo site_url('article/add'); ?>">
+								<i class="fa fa-plus-circle"></i>
+								Add New
+							</a>
+						</li>
+					</ul>
+				</li>
+			<?php endif; ?>
 
-			<li class="header">MANAGEMENT</li>
+			<li class="header">MANAGEMENTS</li>
 
 			<!-- Optionally, you can add icons to the links -->
+			<?php if (in_array('c_user', $this->useraccess)) : ?>
+				<li class="treeview">
+					<a href="<?php echo site_url('user/all'); ?>">
+						<i class="fa fa-users"></i>
+						<span>User</span>
+						<i class="fa fa-angle-left pull-right"></i>
+					</a>
+					<ul class="treeview-menu">
+						<li>
+							<a href="<?php echo site_url('user/all'); ?>">
+								<i class="fa fa-list-alt"></i>
+								List
+							</a>
+						</li>
+						<li>
+							<a href="<?php echo site_url('user/add'); ?>">
+								<i class="fa fa-plus-circle"></i>
+								Add New
+							</a>
+						</li>
+					</ul>
+				</li>
+			<?php endif; ?>
+
+			<li class="header">SETTINGS</li>
+
+			<?php if (in_array('c_settings', $this->useraccess)) : ?>
 			<li class="treeview">
-				<a href="<?php echo site_url('user'); ?>">
-					<i class="fa fa-users"></i>
-					<span>User</span>
+				<a href="<?php echo site_url('settings/basic'); ?>">
+					<i class="fa fa-wrench"></i>
+					<span>Settings</span>
 					<i class="fa fa-angle-left pull-right"></i>
 				</a>
 				<ul class="treeview-menu">
 					<li>
-						<a href="<?php echo site_url('user'); ?>">
-							<i class="fa fa-list-alt"></i>
-							List
-						</a>
-					</li>
-					<li>
-						<a href="<?php echo site_url('user/add'); ?>">
-							<i class="fa fa-plus-circle"></i>
-							Add New
+						<a href="<?php echo site_url('settings/basic'); ?>">
+							<i class="fa fa-globe"></i>
+							Basic
 						</a>
 					</li>
 				</ul>
 			</li>
+			<?php endif; ?>
 
 		</ul><!-- /.sidebar-menu -->
 	</section>

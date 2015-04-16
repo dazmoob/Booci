@@ -1,3 +1,28 @@
+@font-face {
+    font-family: Bebas;
+    src: url(../fonts/BEBAS___.TTF);
+}
+
+@font-face {
+    font-family: OpenSans;
+    src: url(../fonts/OpenSans-Regular.ttf);
+}
+
+.sidebar-widget {
+	margin-top: 20px;
+}
+
+.bottom-sm {
+	margin-bottom: 10px;
+}
+
+.btn.btn-white {
+	background-color: #fff;
+  	color: #444;
+  	border-color: #fff;
+	margin-top: 5px;
+}
+
 table#user-data > tbody > tr > td {
 	vertical-align: middle;
 }
