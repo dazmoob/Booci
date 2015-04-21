@@ -148,7 +148,7 @@ class Article_model extends CI_Model {
 				case 'where_in':
 					// When set where_in key 'condition' => array('title' => $title)
 					// Set $title with array('Web', 'Basisdata')
-					$this->db->where_in($condition);
+					$this->db->where_in($param['condition_column'], $param['condition_keyword']);
 					break;
 				case 'where_not_in':
 					// When set where_not_in key 'condition' => array('title' => $title)
@@ -157,6 +157,14 @@ class Article_model extends CI_Model {
 					break;
 				case 'having':
 					$this->db->having($condition);
+					break;
+				case 'where_like':
+					if (!empty($param['condition_where']))
+						$this->db->where($param['condition_where']);
+
+					if (!empty($param['condition_like']))
+						$this->db->like($param['condition_like']);
+
 					break;
 			endswitch;
 

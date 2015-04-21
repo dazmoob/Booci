@@ -53,6 +53,9 @@ $route['profile/uploadPicture'] = 'profile/uploadPicture';
 // Backend - User
 $route['user/(:any)/edit'] = 'user/edit/$1';
 
+// Backend - Article
+$route['article/(:any)/edit'] = 'article/edit/$1';
+
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';
 

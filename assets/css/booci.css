@@ -211,3 +211,32 @@ ul.activity-list > li > ul > li {
 ul.treeview-menu > li {
 	padding: 5px inherit;
 }
+
+.mailbox-messages > table > tbody > tr > td.mailbox-name  {
+	vertical-align: middle;
+}
+
+.modal-dialog.modal-lg.margin-md {
+	margin-top: 20px;
+}
+
+.nav-tabs-custom {
+	box-shadow: none;
+	margin-bottom: 0px;
+}
+
+label.form-label-inline {
+	display: inline;
+	margin: 0 10px 5px 10px;
+}
+
+.image-style {
+	clear: both;
+}
+
+span.caption-image {
+	display: block;
+	font-size: 10px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}

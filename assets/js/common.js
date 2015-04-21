@@ -6,13 +6,13 @@ var projectName = $('#project-name').data('name');
 
 if (host.indexOf('dev') > -1 || host.indexOf('localhost') > -1) {
 	
-	domain = protocol + '://' + host + '/' + projectName + '/';
+	domain = protocol + '//' + host + '/' + projectName + '/';
 	project = '/booci';
 	var i_check = 4;
 
 } else {
 	
-	domain = protocol + '://' + host + '/';
+	domain = protocol + '//' + host + '/';
 	project = '';
 	var i_check = 3;
 

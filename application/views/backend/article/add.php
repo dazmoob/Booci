@@ -3,7 +3,7 @@
     <div class="row">
 
     	<div class="col-md-2 col-lg-2 col-sm-4 col-xs-12">
-    		<a href="<?php echo site_url('article/list'); ?>" class="btn btn-primary btn-block margin-bottom">Article List</a>
+    		<a href="<?php echo site_url('article/all'); ?>" class="btn btn-primary btn-block margin-bottom"><i class="fa fa-list-alt"></i>&nbsp; Article List</a>
 
             <?php $this->load->view('backend/article/sidebar'); ?>
 
@@ -83,4 +83,4 @@
     	</form>
     </div><!-- /.row -->
 
-</div>					
+</div>

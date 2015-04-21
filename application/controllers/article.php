@@ -22,6 +22,8 @@ class Article extends CI_Controller {
 		parent::__construct();
 		$this->load->model('article_model');
 		$this->load->model('user_model');
+		$this->load->helper('label_icon_helper');
+		$this->load->helper('elapsed_helper');
 		$this->ci = &get_instance();
 
 		$this->permit = $this->common->login('error');
@@ -220,31 +222,32 @@ class Article extends CI_Controller {
 			// Check state
 			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('publish', 'draft', 'trash'))) ? $this->uri->segment(3) : false;
 
+			$search = (!empty($this->input->get('search'))) ? array('article.title' => $this->input->get('search')) : false;
+
 			// Get articles data
 			$param = array(
 				'select' => 'user',
 				'join' => 'user',
 				'start' => $page,
 				'limit' => 10,
-				'order_by' => 'article.created_time DESC'
+				'order_by' => 'article.created_time DESC',
+				// Set default get all condition
+				'type' => 'where_like',
+				'condition' => true,
+				'condition_like' => $search,
 			);
 
 			// For super admin, admin and editor if access not only all list
-			if (!empty($state)) :
-				$param['type'] = 'where';
-				$param['condition'] = array('article.state' => ucfirst($state));
-			endif;
+			if (!empty($state))
+				$param['condition_where'] = array('article.state' => ucfirst($state));
 
 			// For writer if access not only all list
 			if ($userdata->level > 3) :
 				
-				$param['type'] = 'where';
-				$param['condition'] = array('created_by' => $userdata->id);
+				$param['condition_where'] = array('created_by' => $userdata->id);
 				
-				if (!empty($state)) :
-					$param['type'] = 'where';
-					$param['condition'] = array('created_by' => $userdata->id, 'article.state' => ucfirst($state));
-				endif;
+				if (!empty($state))
+					$param['condition_where'] = array('created_by' => $userdata->id, 'article.state' => ucfirst($state));
 
 			endif;
 
@@ -266,8 +269,32 @@ class Article extends CI_Controller {
 
 			$count = $this->set_count($param_count);
 			$articles = $this->article_model->get_all($param);
+
+			// Set pagination
+			$this->load->library('pagination');
+			$this->load->model('page_numbering');
+
+			$config = [
+				'url' => [
+					'uri3' => 'list'
+				],
+				'param' => [
+					'table' => 'article',
+					'param' => $param
+				],
+			];
+
+			if (!empty($state))
+				$config['url']['uri3'] = strtolower($state);
+
+			$this->page_numbering->set_pagination($config);
+
 			$param['count'] = $count;
 			$param['articles'] = $articles;
+
+			// Set additional CSS and JS
+			$this->additional_css = array('assets/plugins/iCheck/flat/blue.css');
+			$this->additional_js = array('assets/plugins/iCheck/icheck.min.js');
 
 			// Render view
 			$param['pages'] = array('article/index');
@@ -314,8 +341,8 @@ class Article extends CI_Controller {
 			$param['categories'] = $this->set_category();
 
 			// Set additional CSS and JS
-			$this->additional_css = array('assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.css', 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css', 'assets/plugins/jMosaic-master/css/jquery.jMosaic.css', 'assets/plugins/gallery/gallery.css', 'assets/plugins/select2/select2.css');
-			$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js');
+			$this->additional_css = array('assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.css', 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css', 'assets/plugins/jMosaic-master/css/jquery.jMosaic.css', 'assets/plugins/gallery/gallery.css', 'assets/plugins/select2/select2.css', 'assets/plugins/fileinput/css/fileinput.min.css');
+			$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js');
 
 			// Render view
 			$param['pages'] = array('article/add', 'article/gallery');
@@ -466,6 +493,54 @@ class Article extends CI_Controller {
 
 	}
 
+	public function changeState() {
+
+		$notification = false;
+
+		if ($this->permit) :
+
+			// Get article ID
+			$slugs = $this->input->post('slug');
+
+			$status = true;
+			foreach ($slugs as $key => $slug) :
+
+				if ($this->check_edit($slug) == false)
+					$status = false;
+
+			endforeach;
+
+			if ($status && $slugs) :
+
+				// Set creator / updater
+				$userdata = $this->userdata;
+				$_POST['updated_by'] = $userdata->id;
+
+				$param = array(
+					'type' => 'where_in',
+					'condition' => true,
+					'condition_column' => 'slug',
+					'condition_keyword' => $slugs,
+					'restrict' => 'state',
+				);
+				
+				if ($this->article_model->update($param)) :
+
+					$notification = [
+						'notification' => "Your selected pages has been ".strtolower($this->input->post('state'))."ed successfully !",
+						'alert' => 'success'
+					];
+
+				endif;
+
+			endif;
+
+		endif;
+
+		$this->common->redirect($notification);
+
+	}
+
 	public function getImage($page = 0) {
 
 		$this->load->model('media_model');
@@ -495,6 +570,62 @@ class Article extends CI_Controller {
 		];
 
 		echo json_encode($data);
+
+	}
+
+	public function uploadPicture() {
+
+		$config['upload_path'] = './media/gallery/';
+		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG';
+		$config['max_size']	= '1024';
+		$config['max_width'] = '2000';
+		$config['max_height'] = '2000';
+
+		$this->load->library('upload', $config);
+
+		if (!$this->upload->do_upload()) :
+			$response = array('error' => $this->upload->display_errors());
+		else :
+
+			// Get user data from session
+			$userdata = $this->userdata;
+
+			// Upload file data
+			$upload_file = $this->upload->data();
+			$upload_filename = 'media/gallery/'.$upload_file['client_name'];
+			$rawImage = str_replace('-', ' ', $upload_file['raw_name']);
+			$rawImage = str_replace('_', ' ', $rawImage);
+			$typeImage = $upload_file['file_type'];
+			$typeImage = explode('/', $typeImage);
+			
+			// Set POST for user upload picture
+			$_POST['title'] = ucwords($rawImage);
+			$_POST['filename'] = $upload_file['client_name'];
+			$_POST['type'] = $typeImage[0];
+			$_POST['src'] = $upload_filename;
+			$_POST['created_time'] = date('Y-m-d H:i:s');
+			$_POST['created_by'] = $userdata->id;
+			$_POST['updated_time'] = date('Y-m-d H:i:s');
+			$_POST['updated_by'] = $userdata->id;
+
+			// Insert process
+			$this->load->model('media_model');
+			$insert = $this->media_model->insert();
+
+			if ($insert) :
+
+				$response = array(
+					'data' => $upload_file,
+					'file' => $upload_filename
+				);
+
+			else :
+				$response = array('error' => $this->upload->display_errors());
+			endif;
+
+		endif;
+
+		echo json_encode($response);
 
 	}
 
