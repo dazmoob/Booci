@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Article extends CI_Controller {
+class Category extends CI_Controller {
 
 	/**
 	 * Index Page for this controller.
@@ -20,10 +20,8 @@ class Article extends CI_Controller {
 
 	function __construct() {
 		parent::__construct();
-		$this->load->model('article_model');
+		$this->load->model('category_model');
 		$this->load->model('user_model');
-		$this->load->helper('label_icon_helper');
-		$this->load->helper('elapsed_helper');
 		$this->ci = &get_instance();
 
 		$this->permit = $this->common->login('error');
@@ -46,83 +44,36 @@ class Article extends CI_Controller {
 		$this->breadcrumb = $this->common->backend_breadcrumb($variable);
 	}
 
-	private function check_edit($slug = false) {
-
-		$userdata = $this->userdata;
-
-		// Get article data
-		$param = array('slug' => $slug);
-		if ($userdata->level > 3)
-			$param['user_id'] = $userdata->id;
-		$article = $this->article_model->check_article($param);
-		
-		if ($article) :
-
-			// Set error code and call error function
-			$code = array('status' => 'error', 'view' => 'backend', 'type' => 404);
-			$this->common->error($code);
-
-		endif;
-
-		return $article;
-
-	}
-
-	private function validation($type = false) {
+	private function validation($type = false, $ajax = false) {
 
 		$this->load->library('form_validation');
 		$status = true;
 
-		$this->form_validation->set_rules('title', 'Title', 'required|trim|xss_clean');
-		$this->form_validation->set_rules('content', 'Content', 'trim');
-		$this->form_validation->set_rules('excerpt', 'Excerpt', 'trim|xss_clean');
+		$this->form_validation->set_rules('name', 'Name', 'required|trim|xss_clean');
+		$this->form_validation->set_rules('slug', 'Slug', 'trim|xss_clean');
 		$this->form_validation->set_rules('description', 'Description', 'trim|xss_clean');
-		$this->form_validation->set_rules('keyword', 'Keyword', 'trim|xss_clean');
+
+		$param = [
+			'alert' => 'success',
+			'status' => true,
+			'notification' => 'Success validating category !'
+		];
 
 		if ($this->form_validation->run() == FALSE) :
 
+			$param['status'] = false;
 			$param['alert'] = 'danger';
 			$param['notification'] = validation_errors();
 
-			$this->common->redirect($param);
+			if ($ajax == false)
+				$this->common->redirect($param);
 
 		endif;
 
-		return true;
-
-	}
-
-	private function set_count($param = false) {
-
-		$data = array(); $data['total'] = 0;
-		$param['select'] = 'state, COUNT(*) as count';
-		$param['join'] = false;
-		$counts = $this->article_model->count($param);
-
-		if (!empty($counts)) :
-			$total = 0;
-			foreach ($counts as $count) :
-				$data[$count->state] = $count->count;
-				$total = $total + $count->count;
-			endforeach;
-			$data['total'] = $total;
-		endif;
-
-		return $data;
-
-	}
-
-	private function set_category($param = false) {
-
-		$this->load->model('category_model');
-		$result = $this->category_model->get_all($param);
-
-		$category = array();
-		foreach ($result as $result) :
-			$category[$result->id] = $result->name;
-		endforeach;
-
-		return $category;
+		if ($ajax == false)
+			return true;
+		else
+			return $param;
 
 	}
 
@@ -130,11 +81,12 @@ class Article extends CI_Controller {
 
 		$this->load->library('slug');
 
-		if (!empty($this->input->post('slug'))) :
-			$slug = $this->input->post('slug');
-		else :
-			$slug = $this->input->post('title');
-		endif;
+		$slug = $this->input->post('name');
+
+		$response = [
+			'status' => 'success',
+			'message' => 'New category name !'
+		];
 
 		$status = true; $i = 1;
 		while ($status) :
@@ -142,12 +94,16 @@ class Article extends CI_Controller {
 			$rawSlug = $this->slug->get_slug($slug);
 			$param = array(
 				'type' => 'where',
-				'condition' => array('slug' => $rawSlug)
+				'condition' => array('slug' => $rawSlug, 'name' => $this->input->post('name'))
 			);
-			$articleSlug = $this->article_model->check_slug($param);
+			$categoryName = $this->category_model->check($param);
 
-			if ($articleSlug) :
-				$slug = $this->slug->set_increment($rawSlug, $i);
+			if ($categoryName) :
+				$response = [
+					'notification' => 'Category name already exist !',
+					'alert' => 'danger'
+				];
+				$slug = $this->slug->set_increment($slug);
 			else :
 				$slug = $rawSlug;
 				$status = false;
@@ -157,30 +113,32 @@ class Article extends CI_Controller {
 
 		$_POST['slug'] = $slug;
 
+		return $response;
+
 	}
 
 	private function insert_category($id = false, $restrict = false) {
 
 		if (!empty($id) && !empty($this->input->post('category'))) :
 
-			$this->load->model('article_category_model');
+			$this->load->model('category_category_model');
 
 			$category = $this->input->post('category');
 			foreach ($category as $key => $value) :
 
-				$_POST['article_id'] = $id;
+				$_POST['category_id'] = $id;
 				$_POST['category_id'] = $value;
 				
 				$param = [
 					'type' => 'where',
-					'condition' => array('article_id' => $id, 'category_id' => $value)
+					'condition' => array('category_id' => $id, 'category_id' => $value)
 				];
-				$check = $this->article_category_model->check_article_category($param);
+				$check = $this->category_category_model->check_category_category($param);
 
 				if ($check == false) :
 						
 					if ($restrict == false) :
-						// $this->article_category_model->insert();
+						// $this->category_category_model->insert();
 					endif;
 
 				endif;
@@ -202,15 +160,15 @@ class Article extends CI_Controller {
 			// Initialize basic info
 			$variable = array(
 				'basic' => array(
-					'title' => 'Article List'
+					'title' => 'category List'
 				),
 				'header' => array(
-					'title' => 'Article',
-					'description' => 'All article list in Booci',
+					'title' => 'category',
+					'description' => 'All category list in Booci',
 				),
 				'breadcrumb' => array(
-					'one' => 'Article',
-					'one_link' => site_url('article'),
+					'one' => 'category',
+					'one_link' => site_url('category'),
 					'icon' => 'file-text-o',
 					'two' => 'List',
 				)
@@ -222,15 +180,15 @@ class Article extends CI_Controller {
 			// Check state
 			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('publish', 'draft', 'trash'))) ? $this->uri->segment(3) : false;
 
-			$search = (!empty($this->input->get('search'))) ? array('article.title' => $this->input->get('search')) : false;
+			$search = (!empty($this->input->get('search'))) ? array('category.title' => $this->input->get('search')) : false;
 
-			// Get articles data
+			// Get categorys data
 			$param = array(
 				'select' => 'user',
 				'join' => 'user',
 				'start' => $page,
 				'limit' => 10,
-				'order_by' => 'article.created_time DESC',
+				'order_by' => 'category.created_time DESC',
 				// Set default get all condition
 				'type' => 'where_like',
 				'condition' => true,
@@ -239,7 +197,7 @@ class Article extends CI_Controller {
 
 			// For super admin, admin and editor if access not only all list
 			if (!empty($state))
-				$param['condition_where'] = array('article.state' => ucfirst($state));
+				$param['condition_where'] = array('category.state' => ucfirst($state));
 
 			// For writer if access not only all list
 			if ($userdata->level > 3) :
@@ -247,11 +205,11 @@ class Article extends CI_Controller {
 				$param['condition_where'] = array('created_by' => $userdata->id);
 				
 				if (!empty($state))
-					$param['condition_where'] = array('created_by' => $userdata->id, 'article.state' => ucfirst($state));
+					$param['condition_where'] = array('created_by' => $userdata->id, 'category.state' => ucfirst($state));
 
 			endif;
 
-			// Set to conut all articles data
+			// Set to conut all categorys data
 			$param_count = array(
 				'select' => 'user',
 				'join' => 'user',
@@ -268,7 +226,7 @@ class Article extends CI_Controller {
 			endif;
 
 			$count = $this->set_count($param_count);
-			$articles = $this->article_model->get_all($param);
+			$categorys = $this->category_model->get_all($param);
 
 			// Set pagination
 			$this->load->library('pagination');
@@ -279,7 +237,7 @@ class Article extends CI_Controller {
 					'uri3' => 'list'
 				],
 				'param' => [
-					'table' => 'article',
+					'table' => 'category',
 					'param' => $param
 				],
 			];
@@ -290,14 +248,14 @@ class Article extends CI_Controller {
 			$this->page_numbering->set_pagination($config);
 
 			$param['count'] = $count;
-			$param['articles'] = $articles;
+			$param['categorys'] = $categorys;
 
 			// Set additional CSS and JS
 			$this->additional_css = array('assets/plugins/iCheck/flat/blue.css');
 			$this->additional_js = array('assets/plugins/iCheck/icheck.min.js');
 
 			// Render view
-			$param['pages'] = array('article/index');
+			$param['pages'] = array('category/index');
 			$this->common->backend($param);
 
 		endif;
@@ -310,23 +268,23 @@ class Article extends CI_Controller {
 
 			// Initialize basic info
 			$variable = [
-				'basic' => array('title' => 'Add New Article'),
+				'basic' => array('title' => 'Add New category'),
 				'header' => [
-					'title' => 'Article',
-					'description' => 'Create new article',
+					'title' => 'category',
+					'description' => 'Create new category',
 				],
 				'breadcrumb' => [
-					'one' => 'Article',
-					'one_link' => site_url('article'),
+					'one' => 'category',
+					'one_link' => site_url('category'),
 					'icon' => 'file-text-o',
-					'two' => 'Create New Article'
+					'two' => 'Create New category'
 				]
 			];
 			$this->set_variable($variable);
 
 			$userdata = $this->userdata;
 
-			// Get articles data
+			// Get categorys data
 			$param = array(
 				'select' => 'user',
 				'join' => 'user'
@@ -345,7 +303,7 @@ class Article extends CI_Controller {
 			$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js', 'assets/plugins/category/category.js');
 
 			// Render view
-			$param['pages'] = array('article/add', 'article/gallery');
+			$param['pages'] = array('category/add', 'category/gallery');
 			$this->common->backend($param);
 
 		endif;
@@ -353,6 +311,11 @@ class Article extends CI_Controller {
 	}
 
 	public function create() {
+
+		$notification = [
+			'notification' => 'Something wrong when create your category',
+			'alert' => 'danger'
+		];
 
 		if ($this->permit) :
 
@@ -364,24 +327,10 @@ class Article extends CI_Controller {
 				// Set slug
 				$this->set_slug();
 
-				// Set state
-				$this->input->post('state');
-				if (!empty($this->input->post('created_time'))) :
-					$this->load->library('datetimes');
-					$diff = $this->datetimes->datetime_status($this->input->post('created_time'));
-					$_POST['state'] = ($diff) ? 'Publish' : 'Draft';
-				endif;
-
-				// Set creator / updater
-				$userdata = $this->userdata;
-				$_POST['created_by'] = $userdata->id;
-				$_POST['updated_by'] = $userdata->id;
-				$_POST['updated_time'] = date('Y-m-d H:i:s');
-
-				$id = $this->article_model->insert();
+				$id = $this->category_model->insert();
 
 				$notification = [
-					'notification' => 'Something wrong when create your article',
+					'notification' => 'Something wrong when create your category',
 					'alert' => 'danger'
 				];
 
@@ -389,8 +338,9 @@ class Article extends CI_Controller {
 
 					$this->insert_category($id);
 					$notification = [
-						'notification' => 'Success create new article !',
-						'alert' => 'success'
+						'notification' => 'Category has been added !',
+						'alert' => 'success',
+						'category' => $this->input->post('name')
 					];
 
 				endif;
@@ -400,6 +350,49 @@ class Article extends CI_Controller {
 		endif;
 
 		$this->common->redirect($notification);
+
+	}
+
+	public function ajaxCreate() {
+
+		$notification = [
+			'notification' => "You don't have access to this page !",
+			'alert' => 'danger'
+		];
+
+		if ($this->permit) :
+
+			// Check validation
+			$notification = $this->validation(false, 'ajax');
+
+			if ($notification['status']) :
+
+				// Set slug
+				$notification = $this->set_slug();
+
+				$id = $this->category_model->insert();
+
+				$notification = [
+					'notification' => 'Something wrong when create your category',
+					'alert' => 'danger'
+				];
+
+				if ($id) :
+
+					$notification = [
+						'notification' => 'Category has been added !',
+						'alert' => 'success',
+						'id' => $id,
+						'category' => $this->input->post('name')
+					];
+
+				endif;
+
+			endif;
+
+		endif;
+
+		echo json_encode($notification);
 
 	}
 
@@ -418,28 +411,28 @@ class Article extends CI_Controller {
 				$userdata = $this->userdata;
 				$param = array(
 					'type' => 'where',
-					'condition' => array('article.slug' => $slug),
+					'condition' => array('category.slug' => $slug),
 				);
-				$article = $this->article_model->get_one($param, true);
+				$category = $this->category_model->get_one($param, true);
 
-				if (!empty($article)) :
+				if (!empty($category)) :
 
 					// Initialize basic info
 					$variable = array(
 						'basic' => array(
-							'title' => 'Edit Article'
+							'title' => 'Edit category'
 						),
 						'header' => array(
-							'title' => 'Article',
-							'description' => 'Edit article '.$article->title,
+							'title' => 'category',
+							'description' => 'Edit category '.$category->title,
 						),
 						'breadcrumb' => array(
-							'one' => 'Article',
-							'one_link' => site_url('article'),
+							'one' => 'category',
+							'one_link' => site_url('category'),
 							'icon' => 'file-text-o',
 							'two' => 'Edit',
-							'two_link' => site_url('article'),
-							'three' => $article->title
+							'two_link' => site_url('category'),
+							'three' => $category->title
 						)
 					);
 					$this->set_variable($variable);
@@ -449,7 +442,7 @@ class Article extends CI_Controller {
 					$this->additional_js = array('assets/plugins/fileinput/js/fileinput.min.js');
 
 					// Render view
-					$param['pages'] = array('article/edit');
+					$param['pages'] = array('category/edit');
 					$this->common->backend($param);
 
 				endif;
@@ -481,7 +474,7 @@ class Article extends CI_Controller {
 						'condition' => array('slug' => $slug),
 						'restrict' => 'update',
 					);
-					$this->article_model->update($param);
+					$this->category_model->update($param);
 
 				endif;
 
@@ -499,7 +492,7 @@ class Article extends CI_Controller {
 
 		if ($this->permit) :
 
-			// Get article ID
+			// Get category ID
 			$slugs = $this->input->post('slug');
 
 			$status = true;
@@ -524,7 +517,7 @@ class Article extends CI_Controller {
 					'restrict' => 'state',
 				);
 				
-				if ($this->article_model->update($param)) :
+				if ($this->category_model->update($param)) :
 
 					$notification = [
 						'notification' => "Your selected pages has been ".strtolower($this->input->post('state'))."ed successfully !",
@@ -629,4 +622,4 @@ class Article extends CI_Controller {
 
 	}
 
-}	
+}		

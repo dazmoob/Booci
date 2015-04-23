@@ -60,9 +60,9 @@
             <div class="form-group">
             	<label>Add Category</label>
             	<div class="input-group input-group-sm">
-                    <input id="new-category" type="text" class="form-control">
+                    <input id="input-category" type="text" class="form-control">
                     <span class="input-group-btn">
-                      	<button class="btn btn-info btn-flat" type="button">Add</button>
+                      	<button id="submit-category" class="btn btn-info btn-flat" type="button">Add</button>
                     </span>
                 </div>
             </div>

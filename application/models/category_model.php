@@ -222,4 +222,15 @@ class Category_model extends CI_Model {
 		check_login
 	*/
 
+	public function check($param = false) {
+
+		$this->select($param);
+		$this->condition($param);
+		$query = $this->db->get('category');
+		$row = $query->row();
+
+		return $row;
+
+	}
+
 }	
