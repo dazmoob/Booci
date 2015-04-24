@@ -15,7 +15,7 @@
     	</button>
     	<div class="center bottom-sm">
           	<div class="btn-group">
-				<button type="reset" class="btn btn-default btn-sm">
+				<button type="reset" class="btn btn-default btn-sm" data-text="refresh text">
 					<i class="fa fa-refresh"></i>&nbsp; Refresh
 				</button>
 				<a href="<?php echo site_url('article/all'); ?>" class="btn btn-default btn-sm">

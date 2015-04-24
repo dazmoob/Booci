@@ -180,7 +180,7 @@ class Article extends CI_Controller {
 				if ($check == false) :
 						
 					if ($restrict == false) :
-						// $this->article_category_model->insert();
+						$this->article_category_model->insert();
 					endif;
 
 				endif;
@@ -390,7 +390,8 @@ class Article extends CI_Controller {
 					$this->insert_category($id);
 					$notification = [
 						'notification' => 'Success create new article !',
-						'alert' => 'success'
+						'alert' => 'success',
+						'redirect' => site_url('article/edit/'.$this->input->post('slug'))
 					];
 
 				endif;
@@ -414,8 +415,10 @@ class Article extends CI_Controller {
 			$edit = $this->check_edit($slug);
 
 			if ($edit) :
-
+				
 				$userdata = $this->userdata;
+
+				// Get edited article
 				$param = array(
 					'type' => 'where',
 					'condition' => array('article.slug' => $slug),
@@ -444,12 +447,26 @@ class Article extends CI_Controller {
 					);
 					$this->set_variable($variable);
 
+					// Get articles data
+					$param = array(
+						'select' => 'user',
+						'join' => 'user'
+					);
+					if ($userdata->level > 3) :
+						$param['type'] = 'where';
+						$param['condition'] = array('created_by' => $userdata->id);
+					endif;
+
+					$count = $this->set_count($param);
+					$param['count'] = $count;
+					$param['categories'] = $this->set_category();
+
 					// Set additional CSS and JS
-					$this->additional_css = array('assets/plugins/fileinput/css/fileinput.min.css');
-					$this->additional_js = array('assets/plugins/fileinput/js/fileinput.min.js');
+					$this->additional_css = array('assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.css', 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css', 'assets/plugins/jMosaic-master/css/jquery.jMosaic.css', 'assets/plugins/gallery/gallery.css', 'assets/plugins/select2/select2.css', 'assets/plugins/fileinput/css/fileinput.min.css');
+					$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js', 'assets/plugins/category/category.js');
 
 					// Render view
-					$param['pages'] = array('article/edit');
+					$param['pages'] = array('article/edit', 'article/gallery');
 					$this->common->backend($param);
 
 				endif;
