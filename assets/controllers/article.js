@@ -27,7 +27,7 @@ $(function(){
 	if (splitPathname[i_check]) {
 
 		$('#'+splitPathname[i_check]).addClass('active');
-		$('.box-title').html(splitPathname[i_check]);
+		// $('.box-title').html(splitPathname[i_check]);
 		$('#title-icon').addClass(icon[splitPathname[i_check]]);
 
 	} else {

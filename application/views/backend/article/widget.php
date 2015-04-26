@@ -30,7 +30,9 @@
 
 </div><!-- /. box -->
 
-<div class='box box-default collapsed-box'>
+<?php $collapse = (!empty($selected)) ? '' : 'collapsed-box'; ?>
+
+<div class='box box-default <?php echo $collapse; ?>'>
 
 	<div class="box-header with-border">
 		<span class="fa-stack">
@@ -52,8 +54,10 @@
                         <span class="glyphicon glyphicon-tags"></span>
                     </span>
 			        <?php
+                        $selected = (!empty($selected)) ? 
+                            $selected : '';
 			        	$attr = 'id="category" multiple="multiple" style="width:100%"';
-			        	echo form_dropdown('category[]', $categories, '', $attr);
+			        	echo form_dropdown('category[]', $categories, $selected, $attr);
 			        ?>
 				</div>
             </div>
@@ -71,7 +75,9 @@
 
 </div>
 
-<div class='box box-default collapsed-box'>
+<?php $collapse = (!empty(set_value('created_time'))) ? '' : 'collapsed-box'; ?>
+
+<div class='box box-default <?php echo $collapse; ?>'>
 
 	<div class="box-header with-border">
 		<span class="fa-stack">
@@ -92,7 +98,7 @@
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
-                    <input name="created_time" type='text' class="form-control" />
+                    <input name="created_time" type='text' class="form-control" value="<?php echo set_value('created_time'); ?>" />
                 </div>
             </div>
         </div>
@@ -129,7 +135,9 @@
     
 </div>
 
-<div class='box box-default collapsed-box'>
+<?php $collapse = (!empty(set_value('featured_image'))) ? '' : 'collapsed-box'; ?>
+
+<div class='box box-default <?php echo $collapse; ?>'>
 
 	<div class="box-header with-border">
 		<span class="fa-stack">
@@ -146,13 +154,21 @@
 
 		<div class="form-group center">
 
-            <div class="featured-show"></div>
+            <input id="featured-image" name="featured_image" type="hidden" value="<?php echo set_value('featured_image'); ?>">
 
-            <input id="featured-image" name="featured_image" type="hidden" value="">
-
-            <a id="choose-featured" data-toggle="modal" data-target="#gallery" class="btn btn-sm btn-primary show-gallery">
-            	<i class="fa fa-camera"></i>&nbsp; Choose Image
-            </a>
+            <?php if (!empty(set_value('featured_image'))) : ?>
+                <div class="featured-show">
+                    <img class="temporary-featured img-responsive bottom-sm" src="<?php echo site_url(set_value('featured_image')); ?>">
+                </div>
+                <a id="choose-featured" data-toggle="modal" data-target="#gallery" class="btn btn-sm btn-success show-gallery">
+                    <i class="fa fa-camera"></i>&nbsp; Change Image
+                </a>
+            <?php else : ?>
+                <div class="featured-show"></div>
+                <a id="choose-featured" data-toggle="modal" data-target="#gallery" class="btn btn-sm btn-primary show-gallery">
+                    <i class="fa fa-camera"></i>&nbsp; Choose Image
+                </a>
+            <?php endif; ?>
 
             <a id="remove-featured" class="btn btn-sm btn-danger remove-gallery hide">
             	<i class="fa fa-remove"></i>&nbsp; Remove

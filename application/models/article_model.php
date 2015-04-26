@@ -193,7 +193,7 @@ class Article_model extends CI_Model {
 		if ($param['restrict'] == 'update') :
 
 			$data['title'] = $this->input->post('title');
-			$data['slug'] = $this->input->post('name');
+			$data['slug'] = $this->input->post('slug');
 			$data['content'] = $this->input->post('content');
 			$data['featured_image'] = $this->input->post('featured_image');
 			$data['excerpt'] = $this->input->post('excerpt');
