@@ -240,3 +240,7 @@ span.caption-image {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
+
+.user-panel > .info {
+	padding-top: 15px;
+}
