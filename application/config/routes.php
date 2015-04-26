@@ -53,8 +53,31 @@ $route['profile/uploadPicture'] = 'profile/uploadPicture';
 // Backend - User
 $route['user/(:any)/edit'] = 'user/edit/$1';
 
-// Backend - Article
+// Article
+// Front End
+$route['article'] = 'article/index';
+$route['article/index'] = 'article/index';
+$route['article/(:num)'] = 'article/index/$1';
+
+// Back End
+$route['article/all'] = 'article/all';
+$route['article/add'] = 'article/add';
+$route['article/all/index'] = 'article/all';
+$route['article/all/list'] = 'article/all';
+$route['article/all/publish'] = 'article/all/$1';
+$route['article/all/draft'] = 'article/all/$1';
+$route['article/all/trash'] = 'article/all/$1';
+
 $route['article/(:any)/edit'] = 'article/edit/$1';
+
+$route['article/restore/(:any)'] = 'article/status/$1/restore';
+$route['article/trash/(:any)'] = 'article/status/$1/trash';
+$route['article/draft/(:any)'] = 'article/status/$1/draft';
+$route['article/publish/(:any)'] = 'article/status/$1/publish';
+$route['article/delete/(:any)'] = 'article/delete/$1';
+
+$route['article/(:any)/draft'] = 'article/show/$1/draft';
+$route['article/(:any)'] = 'article/show/$1';
 
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';

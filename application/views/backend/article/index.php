@@ -70,7 +70,15 @@
     								<td class="mailbox-subject">
 
 	    								<h5>
-	    									<a href="<?php echo site_url('article/'.$article->slug); ?>">
+                                            <?php
+                                                $url = '#';
+                                                if ($article->state == 'Publish') :
+                                                    $url = site_url('article/'.$article->slug);
+                                                elseif ($article->state == 'Draft') :
+                                                    $url = site_url('article/'.$article->slug.'/draft');
+                                                endif;
+                                            ?>
+	    									<a href="<?php echo $url; ?>">
 	    										<?php echo $article->title; ?>
 	    									</a>
 	    								</h5>
@@ -101,7 +109,7 @@
     	    										<i class="fa fa-edit"></i> Edit
         										</a>
 
-        										<a href="<?php echo site_url('article/'.$article->slug.'/trash'); ?>" class="text-danger">
+        										<a href="<?php echo site_url('article/trash/'.$article->slug); ?>" class="text-danger">
     	    										<i class="fa fa-trash"></i> Trash
         										</a>
 
@@ -111,9 +119,13 @@
         										<!-- Restore -->
     	    									<?php if ($article->state == 'Trash') : ?>
 
-        										<a href="<?php echo site_url('article/'.$article->slug.'/restore'); ?>" class="text-info">
+        										<a class="confirm" data-text="restore this article" href="<?php echo site_url('article/restore/'.$article->slug); ?>" class="text-info">
     	    										<i class="fa fa-refresh"></i> Restore
         										</a>
+
+                                                <a class="confirm text-danger" data-text="delete permanently this article from database" href="<?php echo site_url('article/delete/'.$article->slug); ?>">
+                                                    <i class="fa fa-remove"></i> Delete
+                                                </a>
 
     	    									<?php endif; ?>
         										<!-- / Restore -->
@@ -121,7 +133,7 @@
         										<!-- Draft -->
     	    									<?php if ($article->state == 'Publish') : ?>
 
-        										<a href="<?php echo site_url('article/'.$article->slug.'/draft'); ?>" class="text-warning">
+        										<a href="<?php echo site_url('article/draft/'.$article->slug); ?>" class="text-warning">
     	    										<i class="fa fa-file-text-o"></i> Draft
         										</a>
 
@@ -131,7 +143,7 @@
         										<!-- Publish -->
     	    									<?php if ($article->state == 'Draft') : ?>
 
-        										<a href="<?php echo site_url('article/'.$article->slug.'/publish'); ?>" class="text-blue">
+        										<a href="<?php echo site_url('article/publish/'.$article->slug); ?>" class="text-blue">
     	    										<i class="fa fa-globe"></i> Publish
         										</a>
 

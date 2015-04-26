@@ -9,7 +9,7 @@
 
 		</div><!-- /.col -->
 
-		<form method="POST" action="<?php echo site_url('article/create'); ?>">
+		<form method="POST" action="<?php echo site_url('article/update/'.set_value('slug')); ?>">
 
 			<div class="col-md-7 col-lg-7 col-sm-8 col-xs-12">
 				<div class="box box-primary">
@@ -25,11 +25,11 @@
 					<div class="box-body">
 						<div class="form-group">
 							<label>Title</label>
-							<input name="title" type="text" class="form-control" placeholder="Enter title ...">
+							<input name="title" type="text" class="form-control" placeholder="Enter title ..." value="<?php echo set_value('title'); ?>">
 						</div>
 						<div class="form-group">
 							<label>Content</label>
-							<textarea name="content" class="textarea form-control" placeholder="Enter text ..." style="width: 100%; height: 200px"></textarea>
+							<textarea name="content" class="textarea form-control" placeholder="Enter text ..." style="width: 100%; height: 600px"><?php echo set_value('content'); ?></textarea>
 						</div>
 					</div>
 
@@ -59,19 +59,19 @@
 							<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label>Excerpt</label>
-									<textarea name="excerpt" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
+									<textarea name="excerpt" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"><?php echo set_value('excerpt'); ?></textarea>
 								</div>
 							</div>
 							<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label>Description</label>
-									<textarea name="description" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
+									<textarea name="description" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"><?php echo set_value('description'); ?></textarea>
 								</div>
 							</div>
 							<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label>Keyword</label>
-									<textarea name="keyword" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"></textarea>
+									<textarea name="keyword" placeholder="Place some text here" style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"><?php echo set_value('keyword'); ?></textarea>
 								</div>
 							</div>
 						</div>

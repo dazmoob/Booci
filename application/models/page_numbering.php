@@ -21,7 +21,7 @@ class Page_numbering extends CI_Model {
 		$config['total_rows'] = $this->set_total_rows($param);
 
 		// Set data rows limit per page
-		$config['per_page'] = 10; 
+		$config['per_page'] = (!empty($param['per_page'])) ? $param['per_page'] : 10; 
 
 		// Set pagination design
 		$config['full_tag_open'] = "<ul class='pagination pagination-sm no-margin pull-right'>";

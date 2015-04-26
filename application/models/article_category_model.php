@@ -123,7 +123,7 @@ class article_category_model extends CI_Model {
 				case 'where_in':
 					// When set where_in key 'condition' => array('title' => $title)
 					// Set $title with array('Web', 'Basisdata')
-					$this->db->where_in($condition);
+					$this->db->where_in($param['condition_column'], $param['condition_keyword']);
 					break;
 				case 'where_not_in':
 					// When set where_not_in key 'condition' => array('title' => $title)

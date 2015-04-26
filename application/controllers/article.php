@@ -46,7 +46,7 @@ class Article extends CI_Controller {
 		$this->breadcrumb = $this->common->backend_breadcrumb($variable);
 	}
 
-	private function check_edit($slug = false) {
+	private function check_access($slug = false) {
 
 		$userdata = $this->userdata;
 
@@ -56,7 +56,7 @@ class Article extends CI_Controller {
 			$param['user_id'] = $userdata->id;
 		$article = $this->article_model->check_article($param);
 		
-		if ($article) :
+		if ($article == false) :
 
 			// Set error code and call error function
 			$code = array('status' => 'error', 'view' => 'backend', 'type' => 404);
@@ -126,7 +126,21 @@ class Article extends CI_Controller {
 
 	}
 
-	private function set_slug() {
+	private function set_selected_category($param = false) {
+
+		$this->load->model('article_category_model');
+		$result = $this->article_category_model->get_all($param);
+
+		$category = array();
+		foreach ($result as $result) :
+			array_push($category, $result->category_id);
+		endforeach;
+
+		return $category;
+
+	}
+
+	private function set_slug($oldSlug = false) {
 
 		$this->load->library('slug');
 
@@ -153,6 +167,16 @@ class Article extends CI_Controller {
 				$status = false;
 			endif;
 
+			// Check slug for update
+			if (!empty($oldSlug)) :
+
+				if ($oldSlug == $rawSlug) :
+					$slug = $oldSlug;
+					$status = false;
+				endif;
+
+			endif;
+
 		endwhile;
 
 		$_POST['slug'] = $slug;
@@ -161,15 +185,29 @@ class Article extends CI_Controller {
 
 	private function insert_category($id = false, $restrict = false) {
 
+		$this->load->model('article_category_model');
+
 		if (!empty($id) && !empty($this->input->post('category'))) :
 
-			$this->load->model('article_category_model');
+			// Delete category data
+			if ($restrict == 'update') :
+
+				$param = array(
+					'type' => 'where_in',
+					'condition' => true,
+					'condition_column' => 'article_id',
+					'condition_keyword' => $id
+				);
+				
+				$this->article_category_model->delete($param);
+
+			endif;
 
 			$category = $this->input->post('category');
 			foreach ($category as $key => $value) :
 
-				$_POST['article_id'] = $id;
-				$_POST['category_id'] = $value;
+				echo $_POST['article_id'] = $id;
+				echo $_POST['category_id'] = $value;
 				
 				$param = [
 					'type' => 'where',
@@ -177,15 +215,26 @@ class Article extends CI_Controller {
 				];
 				$check = $this->article_category_model->check_article_category($param);
 
-				if ($check == false) :
-						
-					if ($restrict == false) :
-						$this->article_category_model->insert();
-					endif;
-
-				endif;
+				if ($check == false) 
+					$this->article_category_model->insert();
 
 			endforeach;
+
+		elseif (!empty($restrict == 'update') && empty($this->input->post('category'))) :
+
+			// Delete category data
+			if ($restrict == 'update') :
+
+				$param = array(
+					'type' => 'where_in',
+					'condition' => true,
+					'condition_column' => 'article_id',
+					'condition_keyword' => $id
+				);
+				
+				$this->article_category_model->delete($param);
+
+			endif;
 
 		endif;
 
@@ -194,6 +243,52 @@ class Article extends CI_Controller {
 	/*
 		=========== Public Function =============
 	*/
+
+	public function index($page = 0) {
+
+		// Check search
+		$search = (!empty($this->input->get('search'))) ? array('article.title' => $this->input->get('search')) : false;
+
+		// Get articles data
+		$param = array(
+			'select' => 'user',
+			'join' => 'user',
+			'start' => $page,
+			'limit' => 5,
+			'order_by' => 'article.created_time DESC',
+			// Set default get all condition
+			'type' => 'where_like',
+			'condition' => true,
+			'condition_like' => $search,
+			'condition_where' => array('article.state' => 'publish')
+		);
+
+		$articles = $this->article_model->get_all($param);
+
+		// Set pagination
+		$this->load->library('pagination');
+		$this->load->model('page_numbering');
+
+		$config = [
+			'url' => [
+				'fix' => site_url('article')
+			],
+			'per_page' => 5,
+			'param' => [
+				'table' => 'article',
+				'param' => $param
+			],
+		];
+
+		$this->page_numbering->set_pagination($config);
+
+		$param['articles'] = $articles;
+
+		// Render view
+		$param['pages'] = array('article/index');
+		$this->common->frontend($param);
+
+	}
 
 	public function all($state = false, $page = 0) {
 
@@ -391,7 +486,7 @@ class Article extends CI_Controller {
 					$notification = [
 						'notification' => 'Success create new article !',
 						'alert' => 'success',
-						'redirect' => site_url('article/edit/'.$this->input->post('slug'))
+						'redirect' => site_url('article/'.$this->input->post('slug').'/edit')
 					];
 
 				endif;
@@ -412,7 +507,7 @@ class Article extends CI_Controller {
 		if ($this->permit && $param) :
 
 			// Check if user open right username
-			$edit = $this->check_edit($slug);
+			$edit = $this->check_access($slug);
 
 			if ($edit) :
 				
@@ -423,7 +518,7 @@ class Article extends CI_Controller {
 					'type' => 'where',
 					'condition' => array('article.slug' => $slug),
 				);
-				$article = $this->article_model->get_one($param, true);
+				$article = $this->article_model->get_one($param);
 
 				if (!empty($article)) :
 
@@ -447,6 +542,13 @@ class Article extends CI_Controller {
 					);
 					$this->set_variable($variable);
 
+					// Get selected categories
+					$param = array(
+						'type' => 'where',
+						'condition' => array('article_category.article_id' => $article->id),
+					);
+					$selected = $this->set_selected_category($param);
+
 					// Get articles data
 					$param = array(
 						'select' => 'user',
@@ -460,6 +562,7 @@ class Article extends CI_Controller {
 					$count = $this->set_count($param);
 					$param['count'] = $count;
 					$param['categories'] = $this->set_category();
+					$param['selected'] = $selected;
 
 					// Set additional CSS and JS
 					$this->additional_css = array('assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.css', 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css', 'assets/plugins/jMosaic-master/css/jquery.jMosaic.css', 'assets/plugins/gallery/gallery.css', 'assets/plugins/select2/select2.css', 'assets/plugins/fileinput/css/fileinput.min.css');
@@ -485,20 +588,61 @@ class Article extends CI_Controller {
 		if ($this->permit && $param) :
 
 			// Check if user open right username
-			$edit = $this->check_edit($slug);
+			$edit = $this->check_access($slug);
 
 			if ($edit) :
 
 				// Check validation
 				$validation = $this->validation('update');
+
 				if ($validation) :
+
+					$notification = [
+						'notification' => 'Something wrong when update your article',
+						'alert' => 'danger'
+					];
+
+					// Set state
+					$this->input->post('state');
+					if (!empty($this->input->post('created_time'))) :
+						$this->load->library('datetimes');
+						$diff = $this->datetimes->datetime_status($this->input->post('created_time'));
+						$_POST['state'] = ($diff) ? 'Publish' : 'Draft';
+					endif;
+
+					// Set creator / updater
+					$userdata = $this->userdata;
+					$_POST['updated_by'] = $userdata->id;
+					$_POST['updated_time'] = date('Y-m-d H:i:s');
 
 					$param = array(
 						'type' => 'where',
 						'condition' => array('slug' => $slug),
 						'restrict' => 'update',
 					);
-					$this->article_model->update($param);
+
+					// Set slug
+					$this->set_slug($slug);
+
+					$update = $this->article_model->update($param);
+
+					if ($update) :
+
+						// Get edited article
+						$param = array(
+							'type' => 'where',
+							'condition' => array('article.slug' => $this->input->post('slug')),
+						);
+						$article = $this->article_model->get_one($param, true);
+
+						$this->insert_category($article->id, 'update');
+						$notification = [
+							'notification' => 'Success updated your article !',
+							'alert' => 'success',
+							'redirect' => site_url('article/'.$this->input->post('slug').'/edit')
+						];
+
+					endif;
 
 				endif;
 
@@ -506,7 +650,116 @@ class Article extends CI_Controller {
 
 		endif;
 
-		$this->common->redirect();
+		$this->common->redirect($notification);
+
+	}
+
+	public function show($slug = false, $draft = false) {
+
+		// Check user parameter
+		$param = $this->common->check_param($slug);
+
+		if ($param) :
+
+			// Get edited article
+			$param = array(
+				'type' => 'where',
+				'condition' => array('article.slug' => $slug, 'article.state' => 'publish')
+			);
+
+			if ($draft) :
+				$param = null;
+				$param = array(
+					'type' => 'where',
+					'condition' => "article.slug = '".$slug."' AND article.state = 'Publish' OR article.state = 'Draft'"
+				);
+			endif;
+
+			$article = $this->article_model->get_one($param, true);
+
+			if (!empty($article)) :
+
+				// Get selected categories
+				$param = array(
+					'type' => 'where',
+					'condition' => array('article_category.article_id' => $article->id),
+				);
+				$selected = $this->set_selected_category($param);
+
+				$param['selected'] = $selected;
+				
+			endif;
+
+			// Render view
+			$param['article'] = $article;
+			$param['pages'] = array('article/show');
+			$this->common->frontend($param);
+
+		endif;
+
+	}
+
+	public function status($slug = false, $state = false) {
+
+		// Check user parameter
+		$param = $this->common->check_param($slug);
+
+		if ($this->permit && $param) :
+
+			// Check if user open right username
+			$access = $this->check_access($slug);
+
+			if ($access) :
+
+				$notification = [
+					'notification' => 'Something wrong when '.$state.' your article',
+					'alert' => 'danger'
+				];
+
+				// Set state
+				$state = ($state == 'restore') ? 'draft' : $state;
+				$_POST['state'] = ucfirst($state);
+
+				// Set creator / updater
+				$userdata = $this->userdata;
+				$_POST['updated_by'] = $userdata->id;
+				$_POST['updated_time'] = date('Y-m-d H:i:s');
+
+				$param = array(
+					'type' => 'where',
+					'condition' => array('slug' => $slug),
+					'restrict' => 'state',
+				);
+
+				$action = $this->article_model->update($param);
+
+				if ($action) :
+
+					// Get edited article
+					$param = array(
+						'type' => 'where',
+						'condition' => array('article.slug' => $this->input->post('slug')),
+					);
+					$article = $this->article_model->get_one($param, true);
+
+					if ($state == 'trash') :
+						$_POST['category'] = null;
+						$this->insert_category($article->id, 'update');
+					endif;
+
+					$notification = [
+						'notification' => 'Success '.$state.'ed your article !',
+						'alert' => 'success',
+						'redirect' => site_url('article/all')
+					];
+
+				endif;
+
+			endif;
+
+		endif;
+
+		$this->common->redirect($notification);
 
 	}
 
@@ -522,7 +775,7 @@ class Article extends CI_Controller {
 			$status = true;
 			foreach ($slugs as $key => $slug) :
 
-				if ($this->check_edit($slug) == false)
+				if ($this->check_access($slug) == false)
 					$status = false;
 
 			endforeach;
@@ -546,6 +799,65 @@ class Article extends CI_Controller {
 					$notification = [
 						'notification' => "Your selected pages has been ".strtolower($this->input->post('state'))."ed successfully !",
 						'alert' => 'success'
+					];
+
+				endif;
+
+			endif;
+
+		endif;
+
+		$this->common->redirect($notification);
+
+	}
+
+	public function delete($slug = false) {
+
+		// Check user parameter
+		$param = $this->common->check_param($slug);
+
+		if ($this->permit && $param) :
+
+			// Check if user open right username
+			$delete = $this->check_access($slug);
+
+			if ($delete) :
+
+				$notification = [
+					'notification' => 'Something wrong when delete your article',
+					'alert' => 'danger'
+				];
+
+				// Get data before delete article
+				$param = array(
+					'type' => 'where',
+					'condition' => array('article.slug' => $this->input->post('slug')),
+				);
+				$article = $this->article_model->get_one($param, true);
+
+				$param = array(
+					'type' => 'where',
+					'condition' => array('slug' => $slug),
+					'restrict' => 'update',
+				);
+
+				$delete = $this->article_model->delete($param);
+
+				if ($delete) :
+
+					$this->load->model('article_category_model');
+
+					$param = array(
+						'type' => 'where',
+						'condition' => array('article_id' => $id)
+					);
+					
+					$this->article_category_model->delete($param);
+
+					$notification = [
+						'notification' => 'Success deleted your article !',
+						'alert' => 'success',
+						'redirect' => site_url('article/all')
 					];
 
 				endif;
