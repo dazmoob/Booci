@@ -23,19 +23,40 @@
 						<!-- inner menu: contains the messages -->
 						<ul class="menu">
 							<li><!-- start message -->
-								<a href="#">
+							<?php 
+							if (!empty($activities)) : 
+								foreach ($activities as $activity) :
+							?>
+								<a href="<?php echo site_url($activity->url); ?>">
 									<div class="pull-left">
 										<!-- User Image -->
-										<img src="<?php echo site_url(set_value('picture_path')); ?>" class="img-circle" alt="User Image">
+										<span class="fa-stack fa-lg">
+											<i class="fa fa-circle fa-stack-2x text-<?php echo $activity->color; ?>"></i>
+											<i class="fa fa-<?php echo $activity->initial; ?> fa-stack-1x fa-inverse"></i>
+										</span>
 									</div>
 									<!-- Message title and timestamp -->
 									<h4>                            
-										Support Team
-										<small><i class="fa fa-clock-o"></i> 5 mins</small>
+										<?php echo $activity->title; ?>
+										<small>
+											<i class="fa fa-clock-o"></i> 
+											<?php
+												$time = array('start' => $activity->created_time, 'end' => 'now');
+												echo set_elapsed($time);
+											?>
+										</small>
 									</h4>
 									<!-- The message -->
-									<p>Why not buy a new awesome theme?</p>
+									<p><?php echo $activity->description; ?></p>
 								</a>
+							<?php 
+								endforeach;
+							else : 
+							?>
+								<div class="center">
+									<h4>No activities found</h4>
+								</div>
+							<?php endif; ?>
 							</li><!-- end message -->                      
 						</ul><!-- /.menu -->
 					</li>

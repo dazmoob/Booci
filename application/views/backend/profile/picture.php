@@ -55,28 +55,32 @@
 
 			<div class="row">
 				<div id="show-picture" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 profile-picture user-description">
-					<img id="picture" src="<?php echo site_url(set_value('picture_path')); ?>" class="img-circle img-border profile-picture" alt="User Image">
+					<img id="picture" src="<?php echo site_url($user->picture_path); ?>" class="img-circle img-border profile-picture" title="<?php echo $user->name; ?>" alt="User Image">
 
 					<p>
-						<?php echo set_value('name'); ?> - 
+						<?php echo excerpt_words($user->name, 4); ?> - 
 						<?php
 							$level = $this->level;
-							echo $level[set_value('level')];
+							echo $level[$user->level];
 						?>
 						<small>
-							Member since. <?php echo date('d F Y', strtotime(set_value('created_time'))); ?> 
+							Member since. <?php echo date('d F Y', strtotime($user->created_time)); ?> 
 						</small>
 					</p>
 
 					<div class="row user-submenu">
 						<div class="col-xs-4 text-center">
-							<a href="#">Articles</a>
+							<a href="<?php echo site_url('article/all'); ?>">Articles</a>
 						</div>
 						<div class="col-xs-4 text-center">
-							<a href="#">Sales</a>
+						
+						<?php if (in_array('m_message_all', $this->useraccess)) : ?>
+							<a href="<?php echo site_url('message/all'); ?>">Messages</a>
+						<?php endif; ?>
+						
 						</div>
 						<div class="col-xs-4 text-center">
-							<a href="#">Friends</a>
+							<a href="<?php echo site_url(); ?>">Homepage</a>
 						</div>
 					</div>
 				</div>

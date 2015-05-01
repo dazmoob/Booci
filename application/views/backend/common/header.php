@@ -76,13 +76,17 @@
 						<!-- Menu Body -->
 						<li class="user-body">
 							<div class="col-xs-4 text-center">
-								<a href="#">Articles</a>
+								<a href="<?php echo site_url('article/all'); ?>">Articles</a>
 							</div>
 							<div class="col-xs-4 text-center">
-								<a href="#">Sales</a>
+							
+							<?php if (in_array('m_message_all', $this->useraccess)) : ?>
+								<a href="<?php echo site_url('message/all'); ?>">Messages</a>
+							<?php endif; ?>
+							
 							</div>
 							<div class="col-xs-4 text-center">
-								<a href="#">Friends</a>
+								<a href="<?php echo site_url(); ?>">Homepage</a>
 							</div>
 						</li>
 						<!-- Menu Footer-->

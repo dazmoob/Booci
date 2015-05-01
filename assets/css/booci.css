@@ -244,3 +244,7 @@ span.caption-image {
 .user-panel > .info {
 	padding-top: 15px;
 }
+
+.navbar-nav>.user-menu>.dropdown-menu>li.user-header>p {
+	font-size: 14px;
+}

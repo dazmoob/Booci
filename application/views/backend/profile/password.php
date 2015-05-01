@@ -11,11 +11,12 @@
 					Change Password
 				</h4>
 			</div>
+			<form method="post" action="<?php echo site_url('profile/changePassword'); ?>">
 			<div class="modal-body">
 				<p>Please fill all this form</p>
 				<div class="form-group">
 					<label>Old Password <span class="sign-danger">*</span></label>
-					<input required name="old_password" type="password" class="form-control" placeholder="Old Password">
+					<input required name="password" type="password" class="form-control" placeholder="Old Password">
 				</div>
 				<div class="divide-line"></div>
 				<div class="form-group">
@@ -31,10 +32,11 @@
 				<button type="button" class="btn btn-default pull-left" data-dismiss="modal">
 					<i class="fa fa-remove"></i>&nbsp; Close
 				</button>
-				<button type="button" class="btn btn-primary">
+				<button type="submit" class="btn btn-primary">
 					<i class="fa fa-check-circle text-white"></i>&nbsp; Update Password
 				</button>
 			</div>
+			</form>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
 </div>

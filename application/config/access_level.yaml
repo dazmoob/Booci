@@ -6,6 +6,7 @@ super_admin :
 	- pm_article
 	- c_settings
 	- vm_admlog
+	- m_message_all
 
 admin : 
 	- c_user
@@ -13,6 +14,7 @@ admin :
 	- vm_article
 	- c_user
 	- c_settings
+	- m_message_all
 
 editor : 
 	- pm_article

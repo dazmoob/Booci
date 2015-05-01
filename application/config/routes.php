@@ -47,8 +47,9 @@ $route['login/user/(:any)'] = 'login/user/$1';
 // Backend - Profile
 $route['profile/update/(:any)'] = 'profile/update/$1';
 $route['profile/(:any)/edit'] = 'profile/edit/$1';
-$route['profile/(:any)'] = 'profile/index/$1';
+$route['profile/changePassword'] = 'profile/changePassword';
 $route['profile/uploadPicture'] = 'profile/uploadPicture';
+$route['profile/(:any)'] = 'profile/index/$1';
 
 // Backend - User
 $route['user/(:any)/edit'] = 'user/edit/$1';
@@ -62,6 +63,7 @@ $route['article/(:num)'] = 'article/index/$1';
 // Back End
 $route['article/all'] = 'article/all';
 $route['article/add'] = 'article/add';
+$route['article/getImage'] = 'article/getImage';
 $route['article/all/index'] = 'article/all';
 $route['article/all/list'] = 'article/all';
 $route['article/all/publish'] = 'article/all/$1';

@@ -9,8 +9,8 @@
 				<i class="fa fa-user fa-stack-1-5x top-middle fa-inverse"></i>
 			</span>
 			<div class="box-title"> 
-				<h3><?php echo set_value('name'); ?></h3>
-				<h5><a href="<?php echo site_url('profile/'.set_value('username')); ?>"><?php echo set_value('username'); ?></a></h5>
+				<h3><?php echo $user->name; ?></h3>
+				<h5><a href="<?php echo site_url('profile/'.$user->username); ?>"><?php echo $user->username; ?></a></h5>
 			</div>
 		</div><!-- /.box-header -->
 
@@ -27,13 +27,13 @@
 						<div class="form-group">
 							<label>Email address <span class="sign-danger">*</span></label>
 							<div class="form-control readonly">
-								<?php echo set_value('email'); ?>
+								<?php echo $user->email; ?>
 							</div>
 						</div>
 						<div class="form-group">
 							<label>Name <span class="sign-danger">*</span></label>
 							<div class="form-control readonly">
-								<?php echo set_value('name'); ?>
+								<?php echo $user->name; ?>
 							</div>
 						</div>
 						<div class="form-group">
@@ -41,7 +41,7 @@
 							<div class="form-control readonly">
 								<?php 
 									$level = $this->level;
-									echo ucwords(str_replace('_', ' ', $level[set_value('level')])); 
+									echo ucwords(str_replace('_', ' ', $level[$user->level])); 
 								?>
 							</div>
 						</div>
@@ -50,25 +50,25 @@
 						<div class="form-group">
 							<label>Website</label>
 							<div class="form-control readonly">
-								<?php echo set_value('website'); ?>
+								<?php echo $user->website; ?>
 							</div>
 						</div>
 						<div class="form-group">
 							<label>Facebook</label>
 							<div class="form-control readonly">
-								<?php echo set_value('facebook'); ?>
+								<?php echo $user->facebook; ?>
 							</div>
 						</div>
 						<div class="form-group">
 							<label>Twitter</label>
 							<div class="form-control readonly">
-								<?php echo set_value('twitter'); ?>
+								<?php echo $user->twitter; ?>
 							</div>
 						</div>
 						<div class="form-group">
 							<label>Google</label>
 							<div class="form-control readonly">
-								<?php echo set_value('google'); ?>
+								<?php echo $user->google; ?>
 							</div>
 						</div>
 					</div>
