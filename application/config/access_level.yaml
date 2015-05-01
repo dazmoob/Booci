@@ -1,5 +1,6 @@
 super_admin : 
 	- c_user
+	- c_media
 	- d_admin
 	- vm_super
 	- vm_article
@@ -10,6 +11,7 @@ super_admin :
 
 admin : 
 	- c_user
+	- c_media
 	- pm_article
 	- vm_article
 	- c_user

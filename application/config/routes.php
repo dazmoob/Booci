@@ -81,6 +81,10 @@ $route['article/delete/(:any)'] = 'article/delete/$1';
 $route['article/(:any)/draft'] = 'article/show/$1/draft';
 $route['article/(:any)'] = 'article/show/$1';
 
+// Media
+// Backend
+$route['media'] = 'media';
+
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';
 

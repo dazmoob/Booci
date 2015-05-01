@@ -244,8 +244,9 @@ class Media_model extends CI_Model {
 
 		$this->select($param);
 		$this->condition($param);
+		$this->db->group_by('type'); 
 		$query = $this->db->get('media');
-		return $query->row();
+		return $query->result();
 
 	}
 
