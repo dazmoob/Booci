@@ -18,6 +18,17 @@ if ( ! function_exists('get_label')) {
 					);
 
 					break;
+
+				case 'media_type':
+
+					$state = array(
+						'image' => 'primary',
+						'file' => 'info',
+						'audio' => 'success',
+						'video' => 'danger'
+					);
+
+					break;
 				
 				default:
 					
@@ -42,6 +53,17 @@ if ( ! function_exists('get_label')) {
 						'Publish' => 'globe',
 						'Draft' => 'file-text-o',
 						'Trash' => 'trash'
+					);
+
+					break;
+
+				case 'media_type':
+
+					$state = array(
+						'image' => 'photo',
+						'file' => 'file',
+						'audio' => 'music',
+						'video' => 'video-camera'
 					);
 
 					break;

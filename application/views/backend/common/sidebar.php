@@ -66,21 +66,39 @@
 			<?php if (in_array('c_media', $this->useraccess)) : ?>
 				<li class="treeview">
 					<a href="<?php echo site_url('media'); ?>">
-						<i class="fa fa-file-text-o"></i>
-						<span>Article</span>
+						<i class="fa fa-film"></i>
+						<span>Media</span>
 						<i class="fa fa-angle-left pull-right"></i>
 					</a>
 					<ul class="treeview-menu">
 						<li>
-							<a href="<?php echo site_url('article/all'); ?>">
-								<i class="fa fa-list-alt"></i>
-								List
+							<a href="<?php echo site_url('media/image'); ?>">
+								<i class="fa fa-photo"></i>
+								Gallery
 							</a>
 						</li>
 						<li>
-							<a href="<?php echo site_url('article/add'); ?>">
+							<a href="<?php echo site_url('media/file'); ?>">
+								<i class="fa fa-file"></i>
+								Files
+							</a>
+						</li>
+						<li>
+							<a href="<?php echo site_url('media/audio'); ?>">
+								<i class="fa fa-music"></i>
+								Audio
+							</a>
+						</li>
+						<li>
+							<a href="<?php echo site_url('media/video'); ?>">
+								<i class="fa fa-video-camera"></i>
+								Video
+							</a>
+						</li>
+						<li>
+							<a href="<?php echo site_url('media/add'); ?>">
 								<i class="fa fa-plus-circle"></i>
-								Add New
+								Add
 							</a>
 						</li>
 					</ul>

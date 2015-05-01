@@ -83,7 +83,9 @@ $route['article/(:any)'] = 'article/show/$1';
 
 // Media
 // Backend
-$route['media'] = 'media';
+$route['media/index'] = 'media/index/image';
+$route['media/image'] = 'media/index/image';
+$route['media/audio'] = 'media/index/audio';
 
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';

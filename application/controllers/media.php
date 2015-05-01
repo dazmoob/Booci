@@ -103,7 +103,7 @@ class Media extends CI_Controller {
 				'breadcrumb' => array(
 					'one' => 'Media',
 					'one_link' => site_url('media'),
-					'icon' => 'picture',
+					'icon' => 'film',
 					'two' => 'List',
 				)
 			);
@@ -117,7 +117,7 @@ class Media extends CI_Controller {
 
 			$search = (!empty($this->input->get('search'))) ? array('media.title' => $this->input->get('search')) : false;
 
-			// Get articles data
+			// Get media data
 			$param = array(
 				'start' => $page,
 				'limit' => 10,
@@ -130,7 +130,7 @@ class Media extends CI_Controller {
 
 			// For super admin, admin and editor if access not only all list
 			if (!empty($state))
-				$param['condition_where'] = array('media.type' => ucfirst($state));
+				$param['condition_where'] = array('media.type' => $state);
 
 			// Set to count all articles data
 			$param_count = array(
@@ -156,7 +156,7 @@ class Media extends CI_Controller {
 			];
 
 			if (!empty($state))
-				$config['url']['uri3'] = strtolower($state);
+				$config['url']['uri3'] = $state;
 
 			$this->page_numbering->set_pagination($config);
 

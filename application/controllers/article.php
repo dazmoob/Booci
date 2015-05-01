@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Page extends CI_Controller {
+class Article extends CI_Controller {
 
 	/**
 	 * Index Page for this controller.
@@ -20,7 +20,7 @@ class Page extends CI_Controller {
 
 	function __construct() {
 		parent::__construct();
-		$this->load->model('page_model');
+		$this->load->model('article_model');
 		$this->load->model('user_model');
 		$this->load->helper('label_icon_helper');
 		$this->load->helper('elapsed_helper');
@@ -50,21 +50,21 @@ class Page extends CI_Controller {
 
 		$userdata = $this->userdata;
 
-		// Get page data
+		// Get article data
 		$param = array('slug' => $slug);
 		if ($userdata->level > 3)
 			$param['user_id'] = $userdata->id;
-		$page = $this->page_model->check_page($param);
+		$article = $this->article_model->check_article($param);
 		
-		if ($page == false) :
+		if ($article == false) :
 
 			// Set error code and call error function
-			$code = array('status' => 'error', 'view' => 'frontend', 'type' => 404);
+			$code = array('status' => 'error', 'view' => 'backend', 'type' => 404);
 			$this->common->error($code);
 
 		endif;
 
-		return $page;
+		return $article;
 
 	}
 
@@ -97,7 +97,7 @@ class Page extends CI_Controller {
 		$data = array(); $data['total'] = 0;
 		$param['select'] = 'state, COUNT(*) as count';
 		$param['join'] = false;
-		$counts = $this->page_model->count($param);
+		$counts = $this->article_model->count($param);
 
 		if (!empty($counts)) :
 			$total = 0;
@@ -109,6 +109,34 @@ class Page extends CI_Controller {
 		endif;
 
 		return $data;
+
+	}
+
+	private function set_category($param = false) {
+
+		$this->load->model('category_model');
+		$result = $this->category_model->get_all($param);
+
+		$category = array();
+		foreach ($result as $result) :
+			$category[$result->id] = $result->name;
+		endforeach;
+
+		return $category;
+
+	}
+
+	private function set_selected_category($param = false) {
+
+		$this->load->model('article_category_model');
+		$result = $this->article_category_model->get_all($param);
+
+		$category = array();
+		foreach ($result as $result) :
+			array_push($category, $result->category_id);
+		endforeach;
+
+		return $category;
 
 	}
 
@@ -130,9 +158,9 @@ class Page extends CI_Controller {
 				'type' => 'where',
 				'condition' => array('slug' => $rawSlug)
 			);
-			$pageSlug = $this->page_model->check_slug($param);
+			$articleSlug = $this->article_model->check_slug($param);
 
-			if ($pageSlug) :
+			if ($articleSlug) :
 				$slug = $this->slug->set_increment($rawSlug, $i);
 			else :
 				$slug = $rawSlug;
@@ -155,6 +183,63 @@ class Page extends CI_Controller {
 
 	}
 
+	private function insert_category($id = false, $restrict = false) {
+
+		$this->load->model('article_category_model');
+
+		if (!empty($id) && !empty($this->input->post('category'))) :
+
+			// Delete category data
+			if ($restrict == 'update') :
+
+				$param = array(
+					'type' => 'where_in',
+					'condition' => true,
+					'condition_column' => 'article_id',
+					'condition_keyword' => $id
+				);
+				
+				$this->article_category_model->delete($param);
+
+			endif;
+
+			$category = $this->input->post('category');
+			foreach ($category as $key => $value) :
+
+				echo $_POST['article_id'] = $id;
+				echo $_POST['category_id'] = $value;
+				
+				$param = [
+					'type' => 'where',
+					'condition' => array('article_id' => $id, 'category_id' => $value)
+				];
+				$check = $this->article_category_model->check_article_category($param);
+
+				if ($check == false) 
+					$this->article_category_model->insert();
+
+			endforeach;
+
+		elseif (!empty($restrict == 'update') && empty($this->input->post('category'))) :
+
+			// Delete category data
+			if ($restrict == 'update') :
+
+				$param = array(
+					'type' => 'where_in',
+					'condition' => true,
+					'condition_column' => 'article_id',
+					'condition_keyword' => $id
+				);
+				
+				$this->article_category_model->delete($param);
+
+			endif;
+
+		endif;
+
+	}
+
 	/*
 		=========== Public Function =============
 	*/
@@ -162,23 +247,23 @@ class Page extends CI_Controller {
 	public function index($page = 0) {
 
 		// Check search
-		$search = (!empty($this->input->get('search'))) ? array('page.title' => $this->input->get('search')) : false;
+		$search = (!empty($this->input->get('search'))) ? array('article.title' => $this->input->get('search')) : false;
 
-		// Get pages data
+		// Get articles data
 		$param = array(
 			'select' => 'user',
 			'join' => 'user',
 			'start' => $page,
 			'limit' => 5,
-			'order_by' => 'page.created_time DESC',
+			'order_by' => 'article.created_time DESC',
 			// Set default get all condition
 			'type' => 'where_like',
 			'condition' => true,
 			'condition_like' => $search,
-			'condition_where' => array('page.state' => 'publish')
+			'condition_where' => array('article.state' => 'publish')
 		);
 
-		$pages = $this->page_model->get_all($param);
+		$articles = $this->article_model->get_all($param);
 
 		// Set pagination
 		$this->load->library('pagination');
@@ -186,21 +271,21 @@ class Page extends CI_Controller {
 
 		$config = [
 			'url' => [
-				'fix' => site_url('page')
+				'fix' => site_url('article')
 			],
 			'per_page' => 5,
 			'param' => [
-				'table' => 'page',
+				'table' => 'article',
 				'param' => $param
 			],
 		];
 
 		$this->page_numbering->set_pagination($config);
 
-		$param['pages'] = $pages;
+		$param['articles'] = $articles;
 
 		// Render view
-		$param['pages'] = array('page/index');
+		$param['pages'] = array('article/index');
 		$this->common->frontend($param);
 
 	}
@@ -212,15 +297,15 @@ class Page extends CI_Controller {
 			// Initialize basic info
 			$variable = array(
 				'basic' => array(
-					'title' => 'Pages List'
+					'title' => 'Article List'
 				),
 				'header' => array(
-					'title' => 'Pages Management',
-					'description' => 'All page list in Booci',
+					'title' => 'Article',
+					'description' => 'All article list in Booci',
 				),
 				'breadcrumb' => array(
-					'one' => 'Pages',
-					'one_link' => site_url('page'),
+					'one' => 'Article',
+					'one_link' => site_url('article'),
 					'icon' => 'file-text-o',
 					'two' => 'List',
 				)
@@ -232,15 +317,15 @@ class Page extends CI_Controller {
 			// Check state
 			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('publish', 'draft', 'trash'))) ? $this->uri->segment(3) : false;
 
-			$search = (!empty($this->input->get('search'))) ? array('page.title' => $this->input->get('search')) : false;
+			$search = (!empty($this->input->get('search'))) ? array('article.title' => $this->input->get('search')) : false;
 
-			// Get pages data
+			// Get articles data
 			$param = array(
 				'select' => 'user',
 				'join' => 'user',
 				'start' => $page,
 				'limit' => 10,
-				'order_by' => 'page.created_time DESC',
+				'order_by' => 'article.created_time DESC',
 				// Set default get all condition
 				'type' => 'where_like',
 				'condition' => true,
@@ -249,7 +334,7 @@ class Page extends CI_Controller {
 
 			// For super admin, admin and editor if access not only all list
 			if (!empty($state))
-				$param['condition_where'] = array('page.state' => ucfirst($state));
+				$param['condition_where'] = array('article.state' => ucfirst($state));
 
 			// For writer if access not only all list
 			if ($userdata->level > 3) :
@@ -257,11 +342,11 @@ class Page extends CI_Controller {
 				$param['condition_where'] = array('created_by' => $userdata->id);
 				
 				if (!empty($state))
-					$param['condition_where'] = array('created_by' => $userdata->id, 'page.state' => ucfirst($state));
+					$param['condition_where'] = array('created_by' => $userdata->id, 'article.state' => ucfirst($state));
 
 			endif;
 
-			// Set to conut all pages data
+			// Set to conut all articles data
 			$param_count = array(
 				'select' => 'user',
 				'join' => 'user',
@@ -278,7 +363,7 @@ class Page extends CI_Controller {
 			endif;
 
 			$count = $this->set_count($param_count);
-			$pages = $this->page_model->get_all($param);
+			$articles = $this->article_model->get_all($param);
 
 			// Set pagination
 			$this->load->library('pagination');
@@ -289,7 +374,7 @@ class Page extends CI_Controller {
 					'uri3' => 'list'
 				],
 				'param' => [
-					'table' => 'page',
+					'table' => 'article',
 					'param' => $param
 				],
 			];
@@ -300,14 +385,14 @@ class Page extends CI_Controller {
 			$this->page_numbering->set_pagination($config);
 
 			$param['count'] = $count;
-			$param['pages'] = $pages;
+			$param['articles'] = $articles;
 
 			// Set additional CSS and JS
 			$this->additional_css = array('assets/plugins/iCheck/flat/blue.css');
 			$this->additional_js = array('assets/plugins/iCheck/icheck.min.js');
 
 			// Render view
-			$param['pages'] = array('page/index');
+			$param['pages'] = array('article/index');
 			$this->common->backend($param);
 
 		endif;
@@ -320,23 +405,23 @@ class Page extends CI_Controller {
 
 			// Initialize basic info
 			$variable = [
-				'basic' => array('title' => 'Add New page'),
+				'basic' => array('title' => 'Add New Article'),
 				'header' => [
-					'title' => 'page',
-					'description' => 'Create new page',
+					'title' => 'Article',
+					'description' => 'Create new article',
 				],
 				'breadcrumb' => [
-					'one' => 'page',
-					'one_link' => site_url('page'),
+					'one' => 'Article',
+					'one_link' => site_url('article'),
 					'icon' => 'file-text-o',
-					'two' => 'Create New page'
+					'two' => 'Create New Article'
 				]
 			];
 			$this->set_variable($variable);
 
 			$userdata = $this->userdata;
 
-			// Get pages data
+			// Get articles data
 			$param = array(
 				'select' => 'user',
 				'join' => 'user'
@@ -355,7 +440,7 @@ class Page extends CI_Controller {
 			$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js', 'assets/plugins/category/category.js');
 
 			// Render view
-			$param['pages'] = array('page/add', 'page/gallery');
+			$param['pages'] = array('article/add', 'article/gallery');
 			$this->common->backend($param);
 
 		endif;
@@ -388,10 +473,10 @@ class Page extends CI_Controller {
 				$_POST['updated_by'] = $userdata->id;
 				$_POST['updated_time'] = date('Y-m-d H:i:s');
 
-				$id = $this->page_model->insert();
+				$id = $this->article_model->insert();
 
 				$notification = [
-					'notification' => 'Something wrong when create your page',
+					'notification' => 'Something wrong when create your article',
 					'alert' => 'danger'
 				];
 
@@ -399,9 +484,9 @@ class Page extends CI_Controller {
 
 					$this->insert_category($id);
 					$notification = [
-						'notification' => 'Success create new page !',
+						'notification' => 'Success create new article !',
 						'alert' => 'success',
-						'redirect' => site_url('page/'.$this->input->post('slug').'/edit')
+						'redirect' => site_url('article/'.$this->input->post('slug').'/edit')
 					];
 
 				endif;
@@ -428,31 +513,31 @@ class Page extends CI_Controller {
 				
 				$userdata = $this->userdata;
 
-				// Get edited page
+				// Get edited article
 				$param = array(
 					'type' => 'where',
-					'condition' => array('page.slug' => $slug),
+					'condition' => array('article.slug' => $slug),
 				);
-				$page = $this->page_model->get_one($param);
+				$article = $this->article_model->get_one($param);
 
-				if (!empty($page)) :
+				if (!empty($article)) :
 
 					// Initialize basic info
 					$variable = array(
 						'basic' => array(
-							'title' => 'Edit page'
+							'title' => 'Edit Article'
 						),
 						'header' => array(
-							'title' => 'page',
-							'description' => 'Edit page '.$page->title,
+							'title' => 'Article',
+							'description' => 'Edit article '.$article->title,
 						),
 						'breadcrumb' => array(
-							'one' => 'page',
-							'one_link' => site_url('page'),
+							'one' => 'Article',
+							'one_link' => site_url('article'),
 							'icon' => 'file-text-o',
 							'two' => 'Edit',
-							'two_link' => site_url('page'),
-							'three' => $page->title
+							'two_link' => site_url('article'),
+							'three' => $article->title
 						)
 					);
 					$this->set_variable($variable);
@@ -460,11 +545,11 @@ class Page extends CI_Controller {
 					// Get selected categories
 					$param = array(
 						'type' => 'where',
-						'condition' => array('page_category.page_id' => $page->id),
+						'condition' => array('article_category.article_id' => $article->id),
 					);
 					$selected = $this->set_selected_category($param);
 
-					// Get pages data
+					// Get articles data
 					$param = array(
 						'select' => 'user',
 						'join' => 'user'
@@ -484,7 +569,7 @@ class Page extends CI_Controller {
 					$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js', 'assets/plugins/category/category.js');
 
 					// Render view
-					$param['pages'] = array('page/edit', 'page/gallery');
+					$param['pages'] = array('article/edit', 'article/gallery');
 					$this->common->backend($param);
 
 				endif;
@@ -513,7 +598,7 @@ class Page extends CI_Controller {
 				if ($validation) :
 
 					$notification = [
-						'notification' => 'Something wrong when update your page',
+						'notification' => 'Something wrong when update your article',
 						'alert' => 'danger'
 					];
 
@@ -539,22 +624,22 @@ class Page extends CI_Controller {
 					// Set slug
 					$this->set_slug($slug);
 
-					$update = $this->page_model->update($param);
+					$update = $this->article_model->update($param);
 
 					if ($update) :
 
-						// Get edited page
+						// Get edited article
 						$param = array(
 							'type' => 'where',
-							'condition' => array('page.slug' => $this->input->post('slug')),
+							'condition' => array('article.slug' => $this->input->post('slug')),
 						);
-						$page = $this->page_model->get_one($param, true);
+						$article = $this->article_model->get_one($param, true);
 
-						$this->insert_category($page->id, 'update');
+						$this->insert_category($article->id, 'update');
 						$notification = [
-							'notification' => 'Success updated your page !',
+							'notification' => 'Success updated your article !',
 							'alert' => 'success',
-							'redirect' => site_url('page/'.$this->input->post('slug').'/edit')
+							'redirect' => site_url('article/'.$this->input->post('slug').'/edit')
 						];
 
 					endif;
@@ -576,28 +661,28 @@ class Page extends CI_Controller {
 
 		if ($param) :
 
-			// Get edited page
+			// Get edited article
 			$param = array(
 				'type' => 'where',
-				'condition' => array('page.slug' => $slug, 'page.state' => 'publish')
+				'condition' => array('article.slug' => $slug, 'article.state' => 'publish')
 			);
 
 			if ($draft) :
 				$param = null;
 				$param = array(
 					'type' => 'where',
-					'condition' => "page.slug = '".$slug."' AND page.state = 'Publish' OR page.state = 'Draft'"
+					'condition' => "article.slug = '".$slug."' AND article.state = 'Publish' OR article.state = 'Draft'"
 				);
 			endif;
 
-			$page = $this->page_model->get_one($param, true);
+			$article = $this->article_model->get_one($param, true);
 
-			if (!empty($page)) :
+			if (!empty($article)) :
 
 				// Get selected categories
 				$param = array(
 					'type' => 'where',
-					'condition' => array('page_category.page_id' => $page->id),
+					'condition' => array('article_category.article_id' => $article->id),
 				);
 				$selected = $this->set_selected_category($param);
 
@@ -606,8 +691,8 @@ class Page extends CI_Controller {
 			endif;
 
 			// Render view
-			$param['page'] = $page;
-			$param['pages'] = array('page/show');
+			$param['article'] = $article;
+			$param['pages'] = array('article/show');
 			$this->common->frontend($param);
 
 		endif;
@@ -627,7 +712,7 @@ class Page extends CI_Controller {
 			if ($access) :
 
 				$notification = [
-					'notification' => 'Something wrong when '.$state.' your page',
+					'notification' => 'Something wrong when '.$state.' your article',
 					'alert' => 'danger'
 				];
 
@@ -646,26 +731,26 @@ class Page extends CI_Controller {
 					'restrict' => 'state',
 				);
 
-				$action = $this->page_model->update($param);
+				$action = $this->article_model->update($param);
 
 				if ($action) :
 
-					// Get edited page
+					// Get edited article
 					$param = array(
 						'type' => 'where',
-						'condition' => array('page.slug' => $this->input->post('slug')),
+						'condition' => array('article.slug' => $this->input->post('slug')),
 					);
-					$page = $this->page_model->get_one($param, true);
+					$article = $this->article_model->get_one($param, true);
 
 					if ($state == 'trash') :
 						$_POST['category'] = null;
-						$this->insert_category($page->id, 'update');
+						$this->insert_category($article->id, 'update');
 					endif;
 
 					$notification = [
-						'notification' => 'Success '.$state.'ed your page !',
+						'notification' => 'Success '.$state.'ed your article !',
 						'alert' => 'success',
-						'redirect' => site_url('page/all')
+						'redirect' => site_url('article/all')
 					];
 
 				endif;
@@ -684,7 +769,7 @@ class Page extends CI_Controller {
 
 		if ($this->permit) :
 
-			// Get page ID
+			// Get article ID
 			$slugs = $this->input->post('slug');
 
 			$status = true;
@@ -709,7 +794,7 @@ class Page extends CI_Controller {
 					'restrict' => 'state',
 				);
 				
-				if ($this->page_model->update($param)) :
+				if ($this->article_model->update($param)) :
 
 					$notification = [
 						'notification' => "Your selected pages has been ".strtolower($this->input->post('state'))."ed successfully !",
@@ -739,16 +824,16 @@ class Page extends CI_Controller {
 			if ($delete) :
 
 				$notification = [
-					'notification' => 'Something wrong when delete your page',
+					'notification' => 'Something wrong when delete your article',
 					'alert' => 'danger'
 				];
 
-				// Get data before delete page
+				// Get data before delete article
 				$param = array(
 					'type' => 'where',
-					'condition' => array('page.slug' => $this->input->post('slug')),
+					'condition' => array('article.slug' => $this->input->post('slug')),
 				);
-				$page = $this->page_model->get_one($param, true);
+				$article = $this->article_model->get_one($param, true);
 
 				$param = array(
 					'type' => 'where',
@@ -756,23 +841,23 @@ class Page extends CI_Controller {
 					'restrict' => 'update',
 				);
 
-				$delete = $this->page_model->delete($param);
+				$delete = $this->article_model->delete($param);
 
 				if ($delete) :
 
-					$this->load->model('page_category_model');
+					$this->load->model('article_category_model');
 
 					$param = array(
 						'type' => 'where',
-						'condition' => array('page_id' => $id)
+						'condition' => array('article_id' => $id)
 					);
 					
-					$this->page_category_model->delete($param);
+					$this->article_category_model->delete($param);
 
 					$notification = [
-						'notification' => 'Success deleted your page !',
+						'notification' => 'Success deleted your article !',
 						'alert' => 'success',
-						'redirect' => site_url('page/all')
+						'redirect' => site_url('article/all')
 					];
 
 				endif;
