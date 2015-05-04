@@ -214,55 +214,74 @@ class Media extends CI_Controller {
 
 	}
 
+	public function testUpload() {
+
+		$this->load->view('backend/media/test');
+
+	}
+
 	public function uploadFiles() {
 
 		$config['upload_path'] = './gallery/images/';
 		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG|mp3|wav|mpeg|mpg|mov|avi|doc|docx|xls|xlsx|ppt';
 		$config['max_size']	= '2048';
 
-		$this->load->library('upload', $config);
+		var_dump($_FILES['userfile']); die();
 
-		if (!$this->upload->do_upload()) :
-			$response = array('error' => $this->upload->display_errors());
-		else :
+		foreach ($_FILES['userfile'] as $file) :
 
-			// Get user data from session
-			$userdata = $this->userdata;
+			$_FILES['userfile']['name']= $file['userfile']['name'];
+	        $_FILES['userfile']['type']= $file['userfile']['type'];
+	        $_FILES['userfile']['tmp_name']= $file['userfile']['tmp_name'];
+	        $_FILES['userfile']['error']= $file['userfile']['error'];
+	        $_FILES['userfile']['size']= $file['userfile']['size'];
 
-			// Upload file data
-			$upload_file = $this->upload->data();
-			$upload_filename = 'gallery/images/'.$upload_file['client_name'];
-			$rawImage = str_replace('-', ' ', $upload_file['raw_name']);
-			$rawImage = str_replace('_', ' ', $rawImage);
-			$typeImage = $upload_file['file_type'];
-			$typeImage = explode('/', $typeImage);
-			
-			// Set POST for user upload picture
-			$_POST['title'] = ucwords($rawImage);
-			$_POST['filename'] = $upload_file['client_name'];
-			$_POST['type'] = $typeImage[0];
-			$_POST['src'] = $upload_filename;
-			$_POST['created_time'] = date('Y-m-d H:i:s');
-			$_POST['created_by'] = $userdata->id;
-			$_POST['updated_time'] = date('Y-m-d H:i:s');
-			$_POST['updated_by'] = $userdata->id;
+			if (!$this->upload->do_upload()) :
 
-			// Insert process
-			$this->load->model('media_model');
-			$insert = $this->media_model->insert();
-
-			if ($insert) :
-
-				$response = array(
-					'data' => $upload_file,
-					'file' => $upload_filename
-				);
+				$this->load->library('upload', $config);
+				$response = array('error' => $this->upload->display_errors());
 
 			else :
-				$response = array('error' => $this->upload->display_errors());
+
+				// Get user data from session
+				$userdata = $this->userdata;
+
+				// Upload file data
+				$upload_file = $this->upload->data();
+				$upload_filename = 'gallery/images/'.$upload_file['client_name'];
+				$rawImage = str_replace('-', ' ', $upload_file['raw_name']);
+				$rawImage = str_replace('_', ' ', $rawImage);
+				$typeImage = $upload_file['file_type'];
+				$typeImage = explode('/', $typeImage);
+				
+				// Set POST for user upload picture
+				$_POST['title'] = ucwords($rawImage);
+				$_POST['filename'] = $upload_file['client_name'];
+				$_POST['type'] = $typeImage[0];
+				$_POST['src'] = $upload_filename;
+				$_POST['created_time'] = date('Y-m-d H:i:s');
+				$_POST['created_by'] = $userdata->id;
+				$_POST['updated_time'] = date('Y-m-d H:i:s');
+				$_POST['updated_by'] = $userdata->id;
+
+				// Insert process
+				$this->load->model('media_model');
+				$insert = $this->media_model->insert();
+
+				if ($insert) :
+
+					$response = array(
+						'data' => $upload_file,
+						'file' => $upload_filename
+					);
+
+				else :
+					$response = array('error' => $this->upload->display_errors());
+				endif;
+
 			endif;
 
-		endif;
+		endforeach;
 
 		echo json_encode($response);
 
