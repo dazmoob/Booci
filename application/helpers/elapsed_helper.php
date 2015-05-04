@@ -20,7 +20,7 @@ if ( ! function_exists('set_elapsed')) {
 			31536000 => 'year',
 		);
 
-		$elapsed_time = 'Nothing';
+		$elapsed_time = 'Now';
 
 		foreach ($tokens as $unit => $text) {
 			if ($time < $unit) continue;

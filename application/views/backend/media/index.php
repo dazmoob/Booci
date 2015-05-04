@@ -39,7 +39,7 @@
     					</span>
 
     					<div class="btn-group">
-    						<button type="submit" name="state" value="delete" class="btn btn-danger btn-sm">
+    						<button type="submit" name="state" value="delete" data-text="delete all of this pictures" class="btn btn-danger btn-sm confirm">
     							<i class="fa fa-remove"></i>
     						</button>
     					</div><!-- /.btn-group -->
@@ -61,15 +61,16 @@
     								<td class="center mailbox-check">
     									<input name="filename[]" value="<?php echo $media->filename; ?>" type="checkbox"/>
     								</td>
-    								<td class="mailbox-subject">
+    								<td>
 
-	    								<h5>
                                         <?php
                                             $show = $media->filename;
 
                                             if ($media->type == 'image') :
                                                 $show = 
-                                            		'<img class="img-list" src="'.site_url($media->src).'"/>';
+                                            		'<div class="img-list">
+                                                        <img class="img-part" src="'.site_url($media->src).'"/>
+                                                    </div>';
                                             
                                             elseif ($media->type == 'file') :
                                             	$show = 
@@ -91,11 +92,21 @@
                                             
                                             endif;
 
-                                        	echo $media->title; 
+                                        	echo $show; 
 
                                         ?>
-	    								</h5>
+                                    </td>
 
+                                    <td class="mailbox-subject">
+                                        <h5 class="bold">
+                                            <?php echo $media->title; ?>
+                                        </h5>
+                                        <h5>
+                                            <?php echo $media->filename; ?>
+                                        </h5>
+                                        <p>
+                                            <?php echo $media->description; ?>
+                                        </p>
                                         <div class="action">
 
                                             <p class="pull-left">
@@ -111,11 +122,24 @@
 
         									<p class="pull-right">
 
-        										<a href="<?php echo site_url('media/'.$media->filename.'/edit'); ?>" class="text-success">
+        										<a 
+                                                    data-toggle="modal" 
+                                                    data-target="#edit-media" 
+                                                    data-id="<?php echo $media->id; ?>" 
+                                                    data-title="<?php echo $media->title; ?>"
+                                                    data-filename="<?php echo $media->filename; ?>" 
+                                                    data-description="<?php echo $media->description; ?>" 
+                                                    data-type="<?php echo $media->type; ?>" 
+                                                    data-src="<?php echo site_url($media->src); ?>" 
+                                                    data-created-time="<?php echo date('d F Y, H:i:s', strtotime($media->created_time)) ?>" 
+                                                    data-created-by="<?php echo $media->c_username; ?>" 
+                                                    data-updated-time="<?php echo date('d F Y, H:i:s', strtotime($media->updated_time)) ?>" 
+                                                    data-updated-by="<?php echo $media->u_username; ?>"
+                                                    class="text-success clicked edit-media" >
     	    										<i class="fa fa-edit"></i> Edit
         										</a>
 
-                                                <a class="confirm text-danger" data-text="delete permanently this article from database" href="<?php echo site_url('media/delete/'.$media->filename); ?>">
+                                                <a class="confirm text-danger" data-text="delete permanently this picture <b>(image can't be restored)</b>" href="<?php echo site_url('media/delete/'.$media->filename); ?>">
                                                     <i class="fa fa-remove"></i> Delete
                                                 </a>
 

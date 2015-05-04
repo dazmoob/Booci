@@ -76,6 +76,10 @@ class Media_model extends CI_Model {
 				case 'all':
 					$this->db->select('*');
 					break;
+
+				case 'user':
+					$this->db->select('*, media.id as id, c.id as c_id, c.username as c_username, u.id as u_id, u.username as u_username, media.created_time as created_time, media.updated_time as updated_time, u.created_time as u_created_time, u.updated_time as u_updated_time, c.created_time as c_created_time, c.updated_time as c_updated_time, media.type as type, c.state as c_state, u.state as u_state');
+					break;
 				
 				default:
 					$this->db->select($select);
@@ -95,6 +99,11 @@ class Media_model extends CI_Model {
 			switch ($param['join']) :
 				case 'all':
 					// $this->db->join('media', 'media.id_media = media.id');
+					break;
+
+				case 'user' :
+					$this->db->join('user c', 'media.created_by = c.id');
+					$this->db->join('user u', 'media.updated_by = u.id');
 					break;
 				
 				default:
@@ -132,6 +141,14 @@ class Media_model extends CI_Model {
 				case 'having':
 					$this->db->having($condition);
 					break;
+				case 'where_like':
+					if (!empty($param['condition_where']))
+						$this->db->where($param['condition_where']);
+
+					if (!empty($param['condition_like']))
+						$this->db->like($param['condition_like']);
+
+					break;
 			endswitch;
 
 		endif;
@@ -159,7 +176,6 @@ class Media_model extends CI_Model {
 		if ($param['restrict'] == 'update') :
 
 			$data['title'] = $this->input->post('title');
-			$data['filename'] = $this->input->post('filename');
 			$data['description'] = $this->input->post('description');
 			$data['updated_time'] = date('Y-m-d H:i:s');
 			$data['updated_by'] = $this->input->post('updated_by');
@@ -211,6 +227,10 @@ class Media_model extends CI_Model {
 	public function get_all($param = false) {
 
 		$this->select($param);
+
+		if (!empty($param['join']))
+			$this->join($param);
+		
 		$this->condition($param);
 		$this->limit($param);
 		$this->order_by($param);

@@ -19,16 +19,22 @@ class Media extends CI_Controller {
 	 */
 
 	function __construct() {
+
 		parent::__construct();
-		$this->load->model('media_model');
-		$this->load->model('user_model');
 		$this->ci = &get_instance();
 
+		$this->load->model('media_model');
+		$this->load->model('user_model');
+		$this->load->helper('label_icon_helper');
+		$this->load->helper('elapsed_helper');
+
 		$this->access = $this->common->access('c_media');
+
 		$this->usersession = $this->session->userdata('user');
 		$this->userdata = $this->usersession['data'];
 		$this->useraccess = $this->usersession['access'];
 		$this->userlog = $this->usersession['log'];
+
 	}
 
 	/*
@@ -67,9 +73,6 @@ class Media extends CI_Controller {
 
 		$this->form_validation->set_rules('title', 'Title', 'required|trim|xss_clean');
 		$this->form_validation->set_rules('description', 'Description', 'trim|xss_clean');
-		$this->form_validation->set_rules('type', 'Type', 'trim|xss_clean');
-		$this->form_validation->set_rules('update_time', 'Update Time', 'trim|xss_clean');
-		$this->form_validation->set_rules('update_by', 'Updater', 'trim|xss_clean');
 		
 		if ($this->form_validation->run() == FALSE) :
 			
@@ -80,6 +83,8 @@ class Media extends CI_Controller {
 			$this->common->redirect($param);
 		
 		endif;
+
+		return true;
 
 	}
 
@@ -119,6 +124,8 @@ class Media extends CI_Controller {
 
 			// Get media data
 			$param = array(
+				'select' => 'user',
+				'join' => 'user',
 				'start' => $page,
 				'limit' => 10,
 				'order_by' => 'media.created_time DESC',
@@ -168,7 +175,7 @@ class Media extends CI_Controller {
 			$this->additional_js = array('assets/plugins/iCheck/icheck.min.js');
 
 			// Render view
-			$param['pages'] = array('media/index');
+			$param['pages'] = array('media/index', 'media/edit');
 			$this->common->backend($param);
 
 		endif;
@@ -183,8 +190,8 @@ class Media extends CI_Controller {
 			$variable = [
 				'basic' => array('title' => 'Add New media'),
 				'header' => [
-					'title' => 'media Management',
-					'description' => 'Create a media',
+					'title' => 'Media Management',
+					'description' => 'Upload new media',
 				],
 				'breadcrumb' => [
 					'one' => 'media',
@@ -195,6 +202,10 @@ class Media extends CI_Controller {
 			];
 			$this->set_variable($variable);
 
+			// Set additional CSS and JS
+			$this->additional_css = array('assets/plugins/fileinput/css/fileinput.min.css');
+			$this->additional_js = array('assets/plugins/fileinput/js/fileinput.min.js');
+
 			// Render view
 			$param['pages'] = array('media/add');
 			$this->common->backend($param);
@@ -203,56 +214,78 @@ class Media extends CI_Controller {
 
 	}
 
-	public function create() {
+	public function uploadFiles() {
 
-		$validation = $this->validation();
+		$config['upload_path'] = './gallery/images/';
+		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG|mp3|wav|mpeg|mpg|mov|avi|doc|docx|xls|xlsx|ppt';
+		$config['max_size']	= '2048';
 
-		// Load random string library and set random password
-		$this->load->library('random');
-		$password = $this->random->get_random();
-		$_POST['password'] = $password;
-		$this->password();
+		$this->load->library('upload', $config);
 
-		if ($this->media_model->insert()) :
-
-			$param = [
-				'alert' => 'success',
-				'notification' => 'Success create '.$this->input->post('medianame').' with password '.$password,
-				'redirect' => site_url('media/add'),
-			];
-
+		if (!$this->upload->do_upload()) :
+			$response = array('error' => $this->upload->display_errors());
 		else :
 
-			$param = [
-				'alert' => 'danger',
-				'notification' => 'Something wrong when add new media, please try again !',
-				'redirect' => site_url('media/add'),
-			];
+			// Get user data from session
+			$userdata = $this->userdata;
+
+			// Upload file data
+			$upload_file = $this->upload->data();
+			$upload_filename = 'gallery/images/'.$upload_file['client_name'];
+			$rawImage = str_replace('-', ' ', $upload_file['raw_name']);
+			$rawImage = str_replace('_', ' ', $rawImage);
+			$typeImage = $upload_file['file_type'];
+			$typeImage = explode('/', $typeImage);
+			
+			// Set POST for user upload picture
+			$_POST['title'] = ucwords($rawImage);
+			$_POST['filename'] = $upload_file['client_name'];
+			$_POST['type'] = $typeImage[0];
+			$_POST['src'] = $upload_filename;
+			$_POST['created_time'] = date('Y-m-d H:i:s');
+			$_POST['created_by'] = $userdata->id;
+			$_POST['updated_time'] = date('Y-m-d H:i:s');
+			$_POST['updated_by'] = $userdata->id;
+
+			// Insert process
+			$this->load->model('media_model');
+			$insert = $this->media_model->insert();
+
+			if ($insert) :
+
+				$response = array(
+					'data' => $upload_file,
+					'file' => $upload_filename
+				);
+
+			else :
+				$response = array('error' => $this->upload->display_errors());
+			endif;
 
 		endif;
 
-		$this->common->redirect($param);
+		echo json_encode($response);
 
 	}
 
-	public function edit($medianame = false) {
+	public function edit($filename = false) {
 
 		// Check media parameter
-		$param = $this->common->check_param($medianame);
+		$param = $this->common->check_param($filename);
 
 		if ($this->access && $param) :
 
-			// Check if media open right medianame
-			$edit = $this->check_edit($medianame);
+			// Check if media open right filename
+			$edit = $this->check_edit($filename);
 
 			if ($edit) :
 
 				// Initialize basic info
 				$variable = [
-					'basic' => array('title' => 'Edit '.$medianame),
+					'basic' => array('title' => 'Edit '.$filename),
 					'header' => [
 						'title' => 'media Management',
-						'description' => 'Edit '.$medianame.' data',
+						'description' => 'Edit '.$filename.' data',
 					],
 					'breadcrumb' => [
 						'one' => 'media',
@@ -275,37 +308,94 @@ class Media extends CI_Controller {
 
 	}
 
-	public function update($medianame = false) {
+	public function update($filename = false) {
 
 		// Check media parameter
-		$param = $this->common->check_param($medianame);
+		$param = $this->common->check_param($filename);
 
 		if ($this->access && $param) :
 
-			$validation = $this->validation('update');
+			$validation = $this->validation();
 
-			// Load random string library and set random password
+			// Check validation
+			if ($validation) :
+
+				// Set creator / updater
+				$userdata = $this->userdata;
+				$_POST['updated_by'] = $userdata->id;
+				$_POST['updated_time'] = date('Y-m-d H:i:s');
+
+				// Set update parameter
+				$param = array();
+				$param = [
+					'restrict' => 'update',
+					'type' => 'where',
+					'condition' => array('filename' => $filename)
+				];
+
+				if ($this->media_model->update($param)) :
+
+					$param = [
+						'alert' => 'success',
+						'notification' => 'Success update '.$this->input->post('filename').' data',
+						'redirect' => site_url('media/'.$this->input->post('type')),
+					];
+
+				else :
+
+					$param = [
+						'alert' => 'danger',
+						'notification' => 'Something wrong when update media data, please try again !',
+						'redirect' => site_url('media/'.$filename.'/edit'),
+					];
+
+				endif;
+
+			endif;
+
+			$this->common->redirect($param);
+
+		endif;
+
+	}
+
+	public function delete($filename = false) {
+
+		// Check media parameter
+		$param = $this->common->check_param($filename);
+
+		if ($this->access && $param) :
+
+			// Set delete parameter
 			$param = array();
 			$param = [
-				'restrict' => 'update',
 				'type' => 'where',
-				'condition' => array('medianame' => $medianame)
+				'condition' => array('filename' => $filename)
 			];
 
-			if ($this->media_model->update($param)) :
+			// Get media data first and save image path
+			$media = $this->media_model->get_one($param);
+			$path = $media->src;
+
+			if ($this->media_model->delete($param)) :
 
 				$param = [
 					'alert' => 'success',
-					'notification' => 'Success update '.$this->input->post('medianame').' data',
-					'redirect' => site_url('media/'.$medianame.'/edit'),
+					'notification' => 'Success delete '.$media->filename.' image, now file is no longer exist',
+					'redirect' => site_url('media/'.$media->type),
 				];
+
+				// Delete old files
+				if (file_exists('./'.$path)) :
+					unlink('./'.$path);
+				endif;
 
 			else :
 
 				$param = [
 					'alert' => 'danger',
-					'notification' => 'Something wrong when update media data, please try again !',
-					'redirect' => site_url('media/'.$medianame.'/edit'),
+					'notification' => 'Something wrong when delete media data, please try again !',
+					'redirect' => site_url('media/'.$media->type),
 				];
 
 			endif;

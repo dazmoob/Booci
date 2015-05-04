@@ -248,3 +248,69 @@ span.caption-image {
 .navbar-nav>.user-menu>.dropdown-menu>li.user-header>p {
 	font-size: 14px;
 }
+
+h5.bold {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+
+.mailbox-messages > table > tbody > tr > td.mailbox-check {
+	min-width: 7px;
+	max-width: 7px;
+}
+
+.mailbox-messages > table > tbody > tr > td.mailbox-name {
+	/*min-width: 100px;
+	max-width: 100px;*/
+	word-wrap: break-word;
+}
+
+.mailbox-messages > table > tbody > tr > td.mailbox-date {
+	/*min-width: 65px;
+	max-width: 65px;*/
+}
+
+.mailbox-messages > table > tbody > tr > td.mailbox-subject {
+	/*min-width: 520px;
+	max-width: 520px;*/
+	word-wrap: break-word;
+	padding-right: 10px;
+	padding-left: 20px;
+}
+
+.mailbox-messages > table > tbody > tr > td.mailbox-subject > h5 {
+	word-wrap: break-word;
+	margin-top: 3px;
+}
+
+.mailbox-messages > table > tbody > tr > td.mailbox-subject > .action > p > a {
+	padding-left: 10px;
+}
+
+.action {
+	border-top: 1px solid #cacaca;
+	padding-top: 10px;
+}
+
+.submit-article {
+	margin-top: 25px;
+}
+
+.box-title {
+	text-transform: capitalize;
+}
+
+.form-control-feedback {
+	pointer-events: visible;
+	background-color: #fafafa;
+	border:1px solid #d2d6de;
+}
+
+.mailbox-name {
+	text-align: center;
+}
+
+.mailbox-name > a {
+	display: block;
+	margin-bottom: 5px;
+}

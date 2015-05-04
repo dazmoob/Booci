@@ -2,14 +2,6 @@
 	<div class="box-body no-padding">
 
 		<ul class="nav nav-pills nav-stacked">
-			<li id="list">
-				<a href="<?php echo site_url('media/all'); ?>">
-					<i class="fa fa-film"></i> All 
-					<span class="label label-primary pull-right">
-						<?php echo (!empty($count['total'])) ? $count['total'] : 0;	?>
-					</span>
-				</a>
-			</li>
 			<li id="image">
 				<a href="<?php echo site_url('media/image'); ?>">
 					<i class="fa fa-photo"></i> Images

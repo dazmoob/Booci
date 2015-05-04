@@ -1,0 +1,29 @@
+.img-list {
+	max-width: 240px;
+	max-height: 120px;
+	text-align: center;
+	overflow: hidden;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.img-list-a {
+	max-height: 300px;
+	text-align: center;
+	overflow: hidden;
+	margin-left: auto;
+	margin-right: auto;
+	padding-top: 10px;
+}
+
+.img-part {
+	width: 100%;
+}
+
+#edit-type {
+	text-transform: capitalize;
+}
+
+#edit-created-by, #edit-updated-by {
+	height: 20px;
+}
