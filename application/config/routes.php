@@ -88,6 +88,10 @@ $route['media/image'] = 'media/index/image';
 $route['media/file'] = 'media/index/file';
 $route['media/audio'] = 'media/index/audio';
 $route['media/video'] = 'media/index/video';
+$route['media/image/(:num)'] = 'media/index/image/$1';
+$route['media/file/(:num)'] = 'media/index/file/$1';
+$route['media/audio/(:num)'] = 'media/index/audio/$1';
+$route['media/video/(:num)'] = 'media/index/video/$1';
 $route['media/update/(:any)'] = 'media/update/$1';
 $route['media/delete/(:any)'] = 'media/delete/$1';
 

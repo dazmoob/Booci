@@ -25,8 +25,11 @@ class Media extends CI_Controller {
 
 		$this->load->model('media_model');
 		$this->load->model('user_model');
+
 		$this->load->helper('label_icon_helper');
 		$this->load->helper('elapsed_helper');
+
+		$this->load->library('upload_config');
 
 		$this->access = $this->common->access('c_media');
 
@@ -153,9 +156,6 @@ class Media extends CI_Controller {
 			$this->load->model('page_numbering');
 
 			$config = [
-				'url' => [
-					'uri3' => 'list'
-				],
 				'param' => [
 					'table' => 'media',
 					'param' => $param
@@ -214,77 +214,78 @@ class Media extends CI_Controller {
 
 	}
 
-	public function testUpload() {
-
-		$this->load->view('backend/media/test');
-
-	}
-
 	public function uploadFiles() {
 
-		$config['upload_path'] = './gallery/images/';
-		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG|mp3|wav|mpeg|mpg|mov|avi|doc|docx|xls|xlsx|ppt';
-		$config['max_size']	= '2048';
+		$count = count($_FILES['userfile']['size']);
 
-		var_dump($_FILES['userfile']); die();
+		foreach ($_FILES as $key => $value) :
 
-		foreach ($_FILES['userfile'] as $file) :
+			for ($i = 0; $i <= $count-1; $i++) :
 
-			$_FILES['userfile']['name']= $file['userfile']['name'];
-	        $_FILES['userfile']['type']= $file['userfile']['type'];
-	        $_FILES['userfile']['tmp_name']= $file['userfile']['tmp_name'];
-	        $_FILES['userfile']['error']= $file['userfile']['error'];
-	        $_FILES['userfile']['size']= $file['userfile']['size'];
+				// Set data for each files
+				$_FILES['userfile']['name']= $value['name'][$i];
+		        $_FILES['userfile']['type']= $value['type'][$i];
+		        $_FILES['userfile']['tmp_name']= $value['tmp_name'][$i];
+		        $_FILES['userfile']['error']= $value['error'][$i];
+		        $_FILES['userfile']['size']= $value['size'][$i];
 
-			if (!$this->upload->do_upload()) :
+		        // Get files type
+		        $type = $value['type'][$i];
+		        $config = $this->upload_config->set_config($type);
 
+		        // Set upload configuration
 				$this->load->library('upload', $config);
-				$response = array('error' => $this->upload->display_errors());
 
-			else :
+		        if (!$this->upload->do_upload()) :
 
-				// Get user data from session
-				$userdata = $this->userdata;
-
-				// Upload file data
-				$upload_file = $this->upload->data();
-				$upload_filename = 'gallery/images/'.$upload_file['client_name'];
-				$rawImage = str_replace('-', ' ', $upload_file['raw_name']);
-				$rawImage = str_replace('_', ' ', $rawImage);
-				$typeImage = $upload_file['file_type'];
-				$typeImage = explode('/', $typeImage);
-				
-				// Set POST for user upload picture
-				$_POST['title'] = ucwords($rawImage);
-				$_POST['filename'] = $upload_file['client_name'];
-				$_POST['type'] = $typeImage[0];
-				$_POST['src'] = $upload_filename;
-				$_POST['created_time'] = date('Y-m-d H:i:s');
-				$_POST['created_by'] = $userdata->id;
-				$_POST['updated_time'] = date('Y-m-d H:i:s');
-				$_POST['updated_by'] = $userdata->id;
-
-				// Insert process
-				$this->load->model('media_model');
-				$insert = $this->media_model->insert();
-
-				if ($insert) :
-
-					$response = array(
-						'data' => $upload_file,
-						'file' => $upload_filename
-					);
+					$response = array('error' => $this->upload->display_errors());
 
 				else :
-					$response = array('error' => $this->upload->display_errors());
+
+					// Get user data from session
+					$userdata = $this->userdata;
+
+					// Upload file data
+					$uploadFile = $this->upload->data();
+
+					$fileSource = $config['upload_src'].$uploadFile['file_name'];
+					$rawFile = str_replace('-', ' ', $uploadFile['raw_name']);
+					$rawFile = str_replace('_', ' ', $rawFile);
+					$fileType = $uploadFile['file_type'];
+					$fileType = explode('/', $fileType);
+					
+					// Set POST for user upload files
+					$_POST['title'] = ucwords($rawFile);
+					$_POST['filename'] = $uploadFile['file_name'];
+					$_POST['type'] = $fileType[0];
+					$_POST['src'] = $fileSource;
+					$_POST['created_time'] = date('Y-m-d H:i:s');
+					$_POST['created_by'] = $userdata->id;
+					$_POST['updated_time'] = date('Y-m-d H:i:s');
+					$_POST['updated_by'] = $userdata->id;
+
+					// Insert process
+					$this->load->model('media_model');
+					$insert = $this->media_model->insert();
+
+					if ($insert) :
+
+						$response = array(
+							'data' => $uploadFile,
+							'file' => $fileSource
+						);
+
+					else :
+						$response = array('error' => $this->upload->display_errors());
+					endif;
+
 				endif;
 
-			endif;
+				echo json_encode($response);
+
+		    endfor;
 
 		endforeach;
-
-		echo json_encode($response);
-
 	}
 
 	public function edit($filename = false) {
@@ -424,4 +425,53 @@ class Media extends CI_Controller {
 		endif;
 
 	}
+
+	public function changeState() {
+
+		$notification = false;
+
+		if ($this->access) :
+
+			// Get article ID
+			$slugs = $this->input->post('slug');
+
+			$status = true;
+			foreach ($slugs as $key => $slug) :
+
+				if ($this->check_access($slug) == false)
+					$status = false;
+
+			endforeach;
+
+			if ($status && $slugs) :
+
+				// Set creator / updater
+				$userdata = $this->userdata;
+				$_POST['updated_by'] = $userdata->id;
+
+				$param = array(
+					'type' => 'where_in',
+					'condition' => true,
+					'condition_column' => 'slug',
+					'condition_keyword' => $slugs,
+					'restrict' => 'state',
+				);
+				
+				if ($this->article_model->update($param)) :
+
+					$notification = [
+						'notification' => "Your selected pages has been ".strtolower($this->input->post('state'))."ed successfully !",
+						'alert' => 'success'
+					];
+
+				endif;
+
+			endif;
+
+		endif;
+
+		$this->common->redirect($notification);
+
+	}
+
 }
