@@ -14,7 +14,6 @@ class upload_config {
 
 	public function set_config($type = false) {
 
-// $config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG|mp3|wav|mpeg|mpg|mov|avi|doc|docx|xls|xlsx|ppt';
 		if (!empty($type)) :
 
 			$typeRaw = explode('/', $type);
@@ -27,6 +26,24 @@ class upload_config {
 					$config['upload_path'] = './gallery/images/';
 					$config['upload_src'] = 'gallery/images/';
 					$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG';
+					$config['max_size']	= '2048';
+
+					break;
+
+				case 'application':
+					
+					$config['upload_path'] = './gallery/files/';
+					$config['upload_src'] = 'gallery/files/';
+					$config['allowed_types'] = 'doc|docx|xls|xlsx|ppt|pdf';
+					$config['max_size']	= '2048';
+
+					break;
+
+				case 'text':
+					
+					$config['upload_path'] = './gallery/files/';
+					$config['upload_src'] = 'gallery/files/';
+					$config['allowed_types'] = 'txt';
 					$config['max_size']	= '2048';
 
 					break;

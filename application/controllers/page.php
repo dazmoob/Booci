@@ -19,12 +19,15 @@ class Page extends CI_Controller {
 	 */
 
 	function __construct() {
+
 		parent::__construct();
+		$this->ci = &get_instance();
+
 		$this->load->model('page_model');
 		$this->load->model('user_model');
+
 		$this->load->helper('label_icon_helper');
 		$this->load->helper('elapsed_helper');
-		$this->ci = &get_instance();
 
 		$this->permit = $this->common->login('error');
 
@@ -34,6 +37,7 @@ class Page extends CI_Controller {
 			$this->useraccess = $this->usersession['access'];
 			$this->userlog = $this->usersession['log'];
 		endif;
+
 	}
 
 	/*
@@ -71,7 +75,6 @@ class Page extends CI_Controller {
 	private function validation($type = false) {
 
 		$this->load->library('form_validation');
-		$status = true;
 
 		$this->form_validation->set_rules('title', 'Title', 'required|trim|xss_clean');
 		$this->form_validation->set_rules('content', 'Content', 'trim');
@@ -159,52 +162,6 @@ class Page extends CI_Controller {
 		=========== Public Function =============
 	*/
 
-	public function index($page = 0) {
-
-		// Check search
-		$search = (!empty($this->input->get('search'))) ? array('page.title' => $this->input->get('search')) : false;
-
-		// Get pages data
-		$param = array(
-			'select' => 'user',
-			'join' => 'user',
-			'start' => $page,
-			'limit' => 5,
-			'order_by' => 'page.created_time DESC',
-			// Set default get all condition
-			'type' => 'where_like',
-			'condition' => true,
-			'condition_like' => $search,
-			'condition_where' => array('page.state' => 'publish')
-		);
-
-		$pages = $this->page_model->get_all($param);
-
-		// Set pagination
-		$this->load->library('pagination');
-		$this->load->model('page_numbering');
-
-		$config = [
-			'url' => [
-				'fix' => site_url('page')
-			],
-			'per_page' => 5,
-			'param' => [
-				'table' => 'page',
-				'param' => $param
-			],
-		];
-
-		$this->page_numbering->set_pagination($config);
-
-		$param['pages'] = $pages;
-
-		// Render view
-		$param['pages'] = array('page/index');
-		$this->common->frontend($param);
-
-	}
-
 	public function all($state = false, $page = 0) {
 
 		if ($this->permit) :
@@ -232,7 +189,7 @@ class Page extends CI_Controller {
 			// Check state
 			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('publish', 'draft', 'trash'))) ? $this->uri->segment(3) : false;
 
-			$search = (!empty($this->input->get('search'))) ? array('page.title' => $this->input->get('search')) : false;
+			$search = (!empty($this->input->get('search'))) ? array('bc_page.title' => $this->input->get('search')) : false;
 
 			// Get pages data
 			$param = array(
@@ -240,7 +197,7 @@ class Page extends CI_Controller {
 				'join' => 'user',
 				'start' => $page,
 				'limit' => 10,
-				'order_by' => 'page.created_time DESC',
+				'order_by' => 'bc_page.created_time DESC',
 				// Set default get all condition
 				'type' => 'where_like',
 				'condition' => true,
@@ -249,7 +206,7 @@ class Page extends CI_Controller {
 
 			// For super admin, admin and editor if access not only all list
 			if (!empty($state))
-				$param['condition_where'] = array('page.state' => ucfirst($state));
+				$param['condition_where'] = array('bc_page.state' => ucfirst($state));
 
 			// For writer if access not only all list
 			if ($userdata->level > 3) :
@@ -257,7 +214,7 @@ class Page extends CI_Controller {
 				$param['condition_where'] = array('created_by' => $userdata->id);
 				
 				if (!empty($state))
-					$param['condition_where'] = array('created_by' => $userdata->id, 'page.state' => ucfirst($state));
+					$param['condition_where'] = array('created_by' => $userdata->id, 'bc_page.state' => ucfirst($state));
 
 			endif;
 
@@ -300,7 +257,7 @@ class Page extends CI_Controller {
 			$this->page_numbering->set_pagination($config);
 
 			$param['count'] = $count;
-			$param['pages'] = $pages;
+			$param['pagesData'] = $pages;
 
 			// Set additional CSS and JS
 			$this->additional_css = array('assets/plugins/iCheck/flat/blue.css');
@@ -329,7 +286,7 @@ class Page extends CI_Controller {
 					'one' => 'page',
 					'one_link' => site_url('page'),
 					'icon' => 'file-text-o',
-					'two' => 'Create New page'
+					'two' => 'Create New Page'
 				]
 			];
 			$this->set_variable($variable);
@@ -348,11 +305,10 @@ class Page extends CI_Controller {
 
 			$count = $this->set_count($param);
 			$param['count'] = $count;
-			$param['categories'] = $this->set_category();
 
 			// Set additional CSS and JS
 			$this->additional_css = array('assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.css', 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css', 'assets/plugins/jMosaic-master/css/jquery.jMosaic.css', 'assets/plugins/gallery/gallery.css', 'assets/plugins/select2/select2.css', 'assets/plugins/fileinput/css/fileinput.min.css');
-			$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js', 'assets/plugins/category/category.js');
+			$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js');
 
 			// Render view
 			$param['pages'] = array('page/add', 'page/gallery');
@@ -391,13 +347,12 @@ class Page extends CI_Controller {
 				$id = $this->page_model->insert();
 
 				$notification = [
-					'notification' => 'Something wrong when create your page',
+					'notification' => 'Something wrong when create your page !',
 					'alert' => 'danger'
 				];
 
 				if ($id) :
 
-					$this->insert_category($id);
 					$notification = [
 						'notification' => 'Success create new page !',
 						'alert' => 'success',
@@ -431,7 +386,7 @@ class Page extends CI_Controller {
 				// Get edited page
 				$param = array(
 					'type' => 'where',
-					'condition' => array('page.slug' => $slug),
+					'condition' => array('bc_page.slug' => $slug),
 				);
 				$page = $this->page_model->get_one($param);
 
@@ -457,13 +412,6 @@ class Page extends CI_Controller {
 					);
 					$this->set_variable($variable);
 
-					// Get selected categories
-					$param = array(
-						'type' => 'where',
-						'condition' => array('page_category.page_id' => $page->id),
-					);
-					$selected = $this->set_selected_category($param);
-
 					// Get pages data
 					$param = array(
 						'select' => 'user',
@@ -476,12 +424,10 @@ class Page extends CI_Controller {
 
 					$count = $this->set_count($param);
 					$param['count'] = $count;
-					$param['categories'] = $this->set_category();
-					$param['selected'] = $selected;
 
 					// Set additional CSS and JS
 					$this->additional_css = array('assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.css', 'bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css', 'assets/plugins/jMosaic-master/css/jquery.jMosaic.css', 'assets/plugins/gallery/gallery.css', 'assets/plugins/select2/select2.css', 'assets/plugins/fileinput/css/fileinput.min.css');
-					$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js', 'assets/plugins/category/category.js');
+					$this->additional_js = array('assets/plugins/bootstrap-wysihtml5/wysihtml5x-toolbar.min.js', 'assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.js', 'bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js', 'assets/plugins/jMosaic-master/js/jquery.jMosaic.js', 'assets/plugins/gallery/gallery.js', 'assets/plugins/select2/select2.js', 'assets/plugins/fileinput/js/fileinput.min.js');
 
 					// Render view
 					$param['pages'] = array('page/edit', 'page/gallery');
@@ -546,11 +492,10 @@ class Page extends CI_Controller {
 						// Get edited page
 						$param = array(
 							'type' => 'where',
-							'condition' => array('page.slug' => $this->input->post('slug')),
+							'condition' => array('bc_page.slug' => $this->input->post('slug')),
 						);
 						$page = $this->page_model->get_one($param, true);
 
-						$this->insert_category($page->id, 'update');
 						$notification = [
 							'notification' => 'Success updated your page !',
 							'alert' => 'success',
@@ -579,31 +524,18 @@ class Page extends CI_Controller {
 			// Get edited page
 			$param = array(
 				'type' => 'where',
-				'condition' => array('page.slug' => $slug, 'page.state' => 'publish')
+				'condition' => array('bc_page.slug' => $slug, 'bc_page.state' => 'publish')
 			);
 
 			if ($draft) :
 				$param = null;
 				$param = array(
 					'type' => 'where',
-					'condition' => "page.slug = '".$slug."' AND page.state = 'Publish' OR page.state = 'Draft'"
+					'condition' => "bc_page.slug = '".$slug."' AND bc_page.state = 'Publish' OR bc_page.state = 'Draft'"
 				);
 			endif;
 
 			$page = $this->page_model->get_one($param, true);
-
-			if (!empty($page)) :
-
-				// Get selected categories
-				$param = array(
-					'type' => 'where',
-					'condition' => array('page_category.page_id' => $page->id),
-				);
-				$selected = $this->set_selected_category($param);
-
-				$param['selected'] = $selected;
-				
-			endif;
 
 			// Render view
 			$param['page'] = $page;
@@ -653,14 +585,9 @@ class Page extends CI_Controller {
 					// Get edited page
 					$param = array(
 						'type' => 'where',
-						'condition' => array('page.slug' => $this->input->post('slug')),
+						'condition' => array('bc_page.slug' => $this->input->post('slug')),
 					);
 					$page = $this->page_model->get_one($param, true);
-
-					if ($state == 'trash') :
-						$_POST['category'] = null;
-						$this->insert_category($page->id, 'update');
-					endif;
 
 					$notification = [
 						'notification' => 'Success '.$state.'ed your page !',
@@ -746,7 +673,7 @@ class Page extends CI_Controller {
 				// Get data before delete page
 				$param = array(
 					'type' => 'where',
-					'condition' => array('page.slug' => $this->input->post('slug')),
+					'condition' => array('bc_page.slug' => $this->input->post('slug')),
 				);
 				$page = $this->page_model->get_one($param, true);
 
@@ -759,15 +686,6 @@ class Page extends CI_Controller {
 				$delete = $this->page_model->delete($param);
 
 				if ($delete) :
-
-					$this->load->model('page_category_model');
-
-					$param = array(
-						'type' => 'where',
-						'condition' => array('page_id' => $id)
-					);
-					
-					$this->page_category_model->delete($param);
 
 					$notification = [
 						'notification' => 'Success deleted your page !',
@@ -782,94 +700,6 @@ class Page extends CI_Controller {
 		endif;
 
 		$this->common->redirect($notification);
-
-	}
-
-	public function getImage($page = 0) {
-
-		$this->load->model('media_model');
-		$param = [
-			'where' => array('type' => 'image'),
-			'start' => $page,
-			'limit' => 5
-		];
-
-		$gallery = $this->media_model->get_all($param);
-
-		$paramCount = [
-			'select' => 'COUNT(*) as count',
-			'where' => array('type' => 'image')
-		];
-		$count = $this->media_model->count($paramCount);
-
-		$status = (!empty($gallery)) ? true : false;
-		$remaining = $count->count - $page - 5;
-		$start = $page + 5;
-
-		$data = [
-			'status' => $status,
-			'data' => $gallery,
-			'remaining' => $remaining,
-			'start' => $start
-		];
-
-		echo json_encode($data);
-
-	}
-
-	public function uploadPicture() {
-
-		$config['upload_path'] = './gallery/images/';
-		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG';
-		$config['max_size']	= '1024';
-		$config['max_width'] = '2000';
-		$config['max_height'] = '2000';
-
-		$this->load->library('upload', $config);
-
-		if (!$this->upload->do_upload()) :
-			$response = array('error' => $this->upload->display_errors());
-		else :
-
-			// Get user data from session
-			$userdata = $this->userdata;
-
-			// Upload file data
-			$upload_file = $this->upload->data();
-			$upload_filename = 'gallery/images/'.$upload_file['client_name'];
-			$rawImage = str_replace('-', ' ', $upload_file['raw_name']);
-			$rawImage = str_replace('_', ' ', $rawImage);
-			$typeImage = $upload_file['file_type'];
-			$typeImage = explode('/', $typeImage);
-			
-			// Set POST for user upload picture
-			$_POST['title'] = ucwords($rawImage);
-			$_POST['filename'] = $upload_file['client_name'];
-			$_POST['type'] = $typeImage[0];
-			$_POST['src'] = $upload_filename;
-			$_POST['created_time'] = date('Y-m-d H:i:s');
-			$_POST['created_by'] = $userdata->id;
-			$_POST['updated_time'] = date('Y-m-d H:i:s');
-			$_POST['updated_by'] = $userdata->id;
-
-			// Insert process
-			$this->load->model('media_model');
-			$insert = $this->media_model->insert();
-
-			if ($insert) :
-
-				$response = array(
-					'data' => $upload_file,
-					'file' => $upload_filename
-				);
-
-			else :
-				$response = array('error' => $this->upload->display_errors());
-			endif;
-
-		endif;
-
-		echo json_encode($response);
 
 	}
 

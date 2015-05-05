@@ -81,6 +81,40 @@ $route['article/delete/(:any)'] = 'article/delete/$1';
 $route['article/(:any)/draft'] = 'article/show/$1/draft';
 $route['article/(:any)'] = 'article/show/$1';
 
+// Page
+// Front End
+
+// Back End
+$route['page'] = 'page/all';
+$route['page/index'] = 'page/all';
+$route['page/all'] = 'page/all';
+$route['page/(:num)'] = 'page/all/$1';
+$route['page/add'] = 'page/add';
+$route['page/create'] = 'page/create';
+$route['page/getImage'] = 'page/getImage';
+$route['page/all/index'] = 'page/all';
+$route['page/all/list'] = 'page/all';
+$route['page/all/list/(:num)'] = 'page/all/list/$1';
+$route['page/all/publish'] = 'page/all/$1';
+$route['page/all/publish/(:num)'] = 'page/all/publish/$1';
+$route['page/all/draft'] = 'page/all/$1';
+$route['page/all/draft/(:num)'] = 'page/all/draft/$1';
+$route['page/all/trash'] = 'page/all/$1';
+$route['page/all/trash/(:num)'] = 'page/all/trash/$1';
+$route['page/changeState'] = 'page/changeState';
+
+$route['page/(:any)/edit'] = 'page/edit/$1';
+$route['page/update/(:any)'] = 'page/update/$1';
+
+$route['page/restore/(:any)'] = 'page/status/$1/restore';
+$route['page/trash/(:any)'] = 'page/status/$1/trash';
+$route['page/draft/(:any)'] = 'page/status/$1/draft';
+$route['page/publish/(:any)'] = 'page/status/$1/publish';
+$route['page/delete/(:any)'] = 'page/delete/$1';
+
+$route['page/(:any)/draft'] = 'page/show/$1/draft';
+$route['page/(:any)'] = 'page/show/$1';
+
 // Media
 // Backend
 $route['media/index'] = 'media/index/image';

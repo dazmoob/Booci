@@ -3,24 +3,37 @@ super_admin :
 	- c_media
 	- d_admin
 	- vm_super
+	- vm_page
+	- pm_page
 	- vm_article
 	- pm_article
 	- c_settings
 	- vm_admlog
+	- c_message
+	- vm_message
+	- pm_message
 	- m_message_all
 
 admin : 
 	- c_user
 	- c_media
+	- pm_page
+	- vm_page
 	- pm_article
 	- vm_article
 	- c_user
 	- c_settings
+	- c_message
+	- vm_message
+	- pm_message
 	- m_message_all
 
 editor : 
+	- pm_page
+	- vm_page
 	- pm_article
 	- vm_article
+	- c_message
 
 writer : 
 	- pm_article

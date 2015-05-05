@@ -19,6 +19,16 @@ if ( ! function_exists('get_label')) {
 
 					break;
 
+				case 'page_state':
+
+					$state = array(
+						'Publish' => 'success',
+						'Draft' => 'warning',
+						'Trash' => 'danger'
+					);
+
+					break;
+
 				case 'media_type':
 
 					$state = array(
@@ -48,6 +58,16 @@ if ( ! function_exists('get_label')) {
 
 			switch ($type) {
 				case 'article_state':
+
+					$state = array(
+						'Publish' => 'globe',
+						'Draft' => 'file-text-o',
+						'Trash' => 'trash'
+					);
+
+					break;
+
+				case 'page_state':
 
 					$state = array(
 						'Publish' => 'globe',

@@ -39,7 +39,7 @@
     					</span>
 
     					<div class="btn-group">
-    						<button type="submit" name="state" value="delete" data-text="delete all of this pictures" class="btn btn-danger btn-sm confirm">
+    						<button type="submit" name="state" value="delete" data-text="delete all of this pictures" class="btn btn-danger btn-sm">
     							<i class="fa fa-remove"></i>
     						</button>
     					</div><!-- /.btn-group -->

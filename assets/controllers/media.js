@@ -78,5 +78,27 @@ $(function(){
 		});
 
 	}
+
+	if (pathname.indexOf('add') == -1) {
+		// Enable iCheck plugin for checkboxes
+	    // iCheck for checkbox and radio inputs
+	    $('input[type="checkbox"]').iCheck({
+	    	checkboxClass: 'icheckbox_flat-blue',
+	    	radioClass: 'iradio_flat-blue'
+	    });
+
+	    // Enable check and uncheck all functionality
+	    $(".checkbox-toggle").click(function () {
+	    	var clicks = $(this).data('clicks');
+	    	if (clicks) {
+	            //Uncheck all checkboxes
+	            $("input[type='checkbox']", ".mailbox-messages").iCheck("uncheck");
+	        } else {
+	            //Check all checkboxes
+	            $("input[type='checkbox']", ".mailbox-messages").iCheck("check");
+	        }
+	        $(this).data("clicks", !clicks);
+	    });
+	}
 	
 });

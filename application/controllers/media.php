@@ -121,7 +121,7 @@ class Media extends CI_Controller {
 
 			// Check state
 			$state = 'image';
-			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('image', 'audio', 'video', 'file'))) ? $this->uri->segment(3) : false;
+			$state = (!empty($this->uri->segment(2)) && in_array($this->uri->segment(2), array('image', 'file'))) ? $this->uri->segment(2) : 'image';
 
 			$search = (!empty($this->input->get('search'))) ? array('media.title' => $this->input->get('search')) : false;
 
@@ -142,7 +142,7 @@ class Media extends CI_Controller {
 			if (!empty($state))
 				$param['condition_where'] = array('media.type' => $state);
 
-			// Set to count all articles data
+			// Set to count all media data
 			$param_count = array(
 				'start' => $page,
 				'limit' => 10
@@ -161,9 +161,6 @@ class Media extends CI_Controller {
 					'param' => $param
 				],
 			];
-
-			if (!empty($state))
-				$config['url']['uri3'] = $state;
 
 			$this->page_numbering->set_pagination($config);
 
@@ -194,9 +191,9 @@ class Media extends CI_Controller {
 					'description' => 'Upload new media',
 				],
 				'breadcrumb' => [
-					'one' => 'media',
+					'one' => 'Media',
 					'one_link' => site_url('media'),
-					'icon' => 'medias',
+					'icon' => 'film',
 					'two' => 'Create New media'
 				]
 			];
@@ -214,7 +211,36 @@ class Media extends CI_Controller {
 
 	}
 
+	public function testUpload() {
+		$this->load->view('backend/media/test');
+	}
+
 	public function uploadFiles() {
+
+		if (!empty($_FILES)) :
+
+			if ($_FILES['userfile']['type'] != 0) :
+
+				// Upload process after validation
+				$this->uploadProcess();
+
+			else :
+
+				$response = array('error' => 'Your file type is not allowed to upload !');
+				echo json_encode($response);
+
+			endif;
+
+		else :
+
+			$response = array('error' => 'Your file is too big !');
+			echo json_encode($response);
+
+		endif;
+		
+	}
+
+	public function uploadProcess() {
 
 		$count = count($_FILES['userfile']['size']);
 
@@ -253,11 +279,14 @@ class Media extends CI_Controller {
 					$rawFile = str_replace('_', ' ', $rawFile);
 					$fileType = $uploadFile['file_type'];
 					$fileType = explode('/', $fileType);
+					$type = $fileType[0];
+					if ($type == 'application' || $type == 'text')
+						$type = 'file';
 					
 					// Set POST for user upload files
 					$_POST['title'] = ucwords($rawFile);
 					$_POST['filename'] = $uploadFile['file_name'];
-					$_POST['type'] = $fileType[0];
+					$_POST['type'] = $type;
 					$_POST['src'] = $fileSource;
 					$_POST['created_time'] = date('Y-m-d H:i:s');
 					$_POST['created_by'] = $userdata->id;
@@ -286,6 +315,7 @@ class Media extends CI_Controller {
 		    endfor;
 
 		endforeach;
+
 	}
 
 	public function edit($filename = false) {
@@ -433,44 +463,144 @@ class Media extends CI_Controller {
 		if ($this->access) :
 
 			// Get article ID
-			$slugs = $this->input->post('slug');
+			$filenames = $this->input->post('filename');
+			$count = count($filenames);
+			$count = ($count > 1) ? $count.' files' : $count.' file';
 
-			$status = true;
-			foreach ($slugs as $key => $slug) :
+			if (!empty($filenames)) :
 
-				if ($this->check_access($slug) == false)
-					$status = false;
+				foreach ($filenames as $key => $filename) :
 
-			endforeach;
-
-			if ($status && $slugs) :
-
-				// Set creator / updater
-				$userdata = $this->userdata;
-				$_POST['updated_by'] = $userdata->id;
-
-				$param = array(
-					'type' => 'where_in',
-					'condition' => true,
-					'condition_column' => 'slug',
-					'condition_keyword' => $slugs,
-					'restrict' => 'state',
-				);
-				
-				if ($this->article_model->update($param)) :
-
-					$notification = [
-						'notification' => "Your selected pages has been ".strtolower($this->input->post('state'))."ed successfully !",
-						'alert' => 'success'
+					// Set delete parameter
+					$param = array();
+					$param = [
+						'type' => 'where',
+						'condition' => array('filename' => $filename)
 					];
 
-				endif;
+					// Get media data first and save image path
+					$media = $this->media_model->get_one($param);
+					$path = $media->src;
+
+					if ($this->media_model->delete($param)) :
+
+						$notification = [
+							'alert' => 'success',
+							'notification' => 'Success delete '.$count.', now file is no longer exist'
+						];
+
+						// Delete old files
+						if (file_exists('./'.$path)) :
+							unlink('./'.$path);
+						endif;
+
+					else :
+
+						$notification = [
+							'alert' => 'danger',
+							'notification' => 'Something wrong when delete media data, please try again !'
+						];
+
+					endif;
+
+				endforeach;
 
 			endif;
 
 		endif;
 
 		$this->common->redirect($notification);
+
+	}
+
+	public function getImage($page = 0) {
+
+		$param = [
+			'where' => array('type' => 'image'),
+			'start' => $page,
+			'limit' => 5
+		];
+
+		$gallery = $this->media_model->get_all($param);
+
+		$paramCount = [
+			'select' => 'COUNT(*) as count',
+			'where' => array('type' => 'image')
+		];
+		$count = $this->media_model->count($paramCount);
+
+		$status = (!empty($gallery)) ? true : false;
+		$remaining = $count->count - $page - 5;
+		$start = $page + 5;
+
+		$data = [
+			'status' => $status,
+			'data' => $gallery,
+			'remaining' => $remaining,
+			'start' => $start
+		];
+
+		echo json_encode($data);
+
+	}
+
+	public function uploadPicture() {
+
+		$config['upload_path'] = './gallery/images/';
+		$config['allowed_types'] = 'gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG';
+		$config['max_size']	= '1024';
+		$config['max_width'] = '2000';
+		$config['max_height'] = '2000';
+
+		$this->load->library('upload', $config);
+
+		if (!$this->upload->do_upload()) :
+			$response = array('error' => $this->upload->display_errors());
+		else :
+
+			// Get user data from session
+			$userdata = $this->userdata;
+
+			// Upload file data
+			$uploadFile = $this->upload->data();
+
+			$fileSource = $config['upload_src'].$uploadFile['file_name'];
+			$rawFile = str_replace('-', ' ', $uploadFile['raw_name']);
+			$rawFile = str_replace('_', ' ', $rawFile);
+			$fileType = $uploadFile['file_type'];
+			$fileType = explode('/', $fileType);
+			$type = $fileType[0];
+			if ($type == 'application' || $type == 'text')
+				$type = 'file';
+			
+			// Set POST for user upload files
+			$_POST['title'] = ucwords($rawFile);
+			$_POST['filename'] = $uploadFile['file_name'];
+			$_POST['type'] = $type;
+			$_POST['src'] = $fileSource;
+			$_POST['created_time'] = date('Y-m-d H:i:s');
+			$_POST['created_by'] = $userdata->id;
+			$_POST['updated_time'] = date('Y-m-d H:i:s');
+			$_POST['updated_by'] = $userdata->id;
+
+			// Insert process
+			$this->load->model('media_model');
+			$insert = $this->media_model->insert();
+
+			if ($insert) :
+
+				$response = array(
+					'data' => $uploadFile,
+					'file' => $fileSource
+				);
+
+			else :
+				$response = array('error' => $this->upload->display_errors());
+			endif;
+
+		endif;
+
+		echo json_encode($response);
 
 	}
 
