@@ -174,6 +174,9 @@ class Message_model extends CI_Model {
 
 		else :
 
+			$data['name'] = $this->input->post('name');
+			$data['email'] = $this->input->post('email');
+			$data['url'] = $this->input->post('url');
 			$data['title'] = $this->input->post('title');
 			$data['content'] = $this->input->post('content');
 			$data['state'] = $this->input->post('state');
@@ -201,6 +204,9 @@ class Message_model extends CI_Model {
 		if ($no_post == false) :
 
 			$_POST['id'] = $data->id;
+			$_POST['name'] = $data->name;
+			$_POST['email'] = $data->email;
+			$_POST['url'] = $data->url;
 			$_POST['title'] = $data->title;
 			$_POST['content'] = $data->content;
 			$_POST['state'] = $data->state;
@@ -249,5 +255,15 @@ class Message_model extends CI_Model {
 		Others function that used for some condition :
 		check_message, check_slug
 	*/
+
+	public function count($param = false) {
+
+		$this->select($param);
+		$this->condition($param);
+		$this->db->group_by($param['type']); 
+		$query = $this->db->get('message');
+		return $query->result();
+
+	}
 
 }

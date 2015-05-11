@@ -3,10 +3,7 @@
     <div class="row">
 
     	<div class="col-md-2">
-    		<a href="<?php echo site_url('article/add'); ?>" class="btn btn-primary btn-block margin-bottom"><i class="fa fa-plus-circle"></i>&nbsp; Compose</a>
-
-            <?php $this->load->view('backend/article/sidebar'); ?>
-    		
+    		<?php $this->load->view('backend/message/sidebar'); ?>
     	</div><!-- /.col -->
 
     	<div class="col-md-10">
@@ -15,20 +12,29 @@
     			<div class="box-header with-border">
     				<span class="fa-stack">
 						<i id="title-icon-bg" class="fa fa-circle fa-stack-2x text-blue"></i>
-						<i id="title-icon" class="fa fa-list fa-stack-1x fa-inverse"></i>
+						<i id="title-icon" class="fa fa-envelope fa-stack-1x fa-inverse"></i>
 					</span>
-					<h3 class="box-title">Article List</h3>
+					<h3 class="box-title">Inbox</h3>
     				<div class="box-tools pull-right">
     					<form class="has-feedback" action="" method="GET">
-    						<input name="search" type="text" class="form-control input-sm" placeholder="Search Article" value="<?php echo $this->input->get('search') ?>" />
-    						<button type="submit" class="glyphicon glyphicon-search form-control-feedback"></button>
+                            
+                            <input name="search" type="text" class="form-control input-sm" placeholder="Search message" value="<?php echo $this->input->get('search') ?>" />
+
+                            <?php if (!empty($this->input->get('category'))) : ?>
+
+        						<input name="category" type="hidden" class="form-control input-sm" placeholder="Search category" value="<?php echo $this->input->get('category') ?>" />
+
+                            <?php endif; ?>
+    						
+                            <button type="submit" class="glyphicon glyphicon-search form-control-feedback"></button>
+
     					</form>
     				</div><!-- /.box-tools -->
     			</div><!-- /.box-header -->
 
-    			<?php if (!empty($articles)) : ?>
+    			<?php if (!empty($messages)) : ?>
 
-                <form action="<?php echo site_url('article/changeState'); ?>" method="POST">
+                <form action="<?php echo site_url('message/changeState'); ?>" method="POST">
 
     			<div class="box-body no-padding">
 
@@ -39,16 +45,23 @@
     					</span>
 
     					<div class="btn-group">
-                            <button type="submit" name="state" value="Publish" class="btn btn-success btn-sm">
-                                <i class="fa fa-globe"></i> Publish
+                            <button type="submit" name="type" value="read" class="btn btn-primary btn-sm">
+                                <i class="fa fa-circle"></i> Read
                             </button>
-                            <button type="submit" name="state" value="Draft" class="btn btn-warning btn-sm">
-                                <i class="fa fa-file-text-o"></i> Back to Draft
+                            <button type="submit" name="type" value="unread" class="btn btn-warning btn-sm">
+                                <i class="fa fa-circle-o"></i> Unread
                             </button>
-    						<button type="submit" name="state" value="Trash" class="btn btn-danger btn-sm">
-    							<i class="fa fa-trash-o"></i>
-    						</button>
+                            <button type="submit" name="type" value="solved" class="btn btn-success btn-sm">
+                                <i class="fa fa-check-square-o"></i> Solved
+                            </button>
+                            <button type="submit" name="type" value="unsolved" class="btn btn-danger btn-sm">
+                                <i class="fa fa-remove"></i> Unsolved
+                            </button>
     					</div><!-- /.btn-group -->
+
+                        <button type="submit" name="type" value="trash" class="btn btn-danger btn-sm">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
 
                         <div class="pull-right">
         					<div class="box-tools">
@@ -61,94 +74,106 @@
     					<table class="table table-hover table-striped">
     						<tbody>
 
-    						<?php foreach ($articles as $article) : ?>
+    						<?php foreach ($messages as $message) : ?>
 
     							<tr>
     								<td class="center mailbox-check">
-    									<input name="slug[]" value="<?php echo $article->slug; ?>" type="checkbox"/>
+    									<input name="id[]" value="<?php echo $message->id; ?>" type="checkbox"/>
     								</td>
     								<td class="mailbox-subject">
 
 	    								<h5>
-                                            <?php
-                                                $url = '#';
-                                                if ($article->state == 'Publish') :
-                                                    $url = site_url('article/'.$article->slug);
-                                                elseif ($article->state == 'Draft') :
-                                                    $url = site_url('article/'.$article->slug.'/draft');
-                                                endif;
-                                            ?>
-	    									<a href="<?php echo $url; ?>">
-	    										<?php echo $article->title; ?>
+                                            <a class="clicked open-message"
+                                                data-toggle="modal" 
+                                                data-target="#show-message"
+                                                data-id="<?php echo $message->id; ?>" 
+                                                data-name="<?php echo $message->name; ?>" 
+                                                data-email="<?php echo $message->email; ?>" 
+                                                data-url="<?php echo $message->url; ?>" 
+                                                data-title="<?php echo $message->title; ?>" 
+                                                data-content="<?php echo $message->content; ?>" 
+                                                data-state="<?php echo $message->state; ?>" 
+                                                data-solve="<?php echo $message->solve; ?>" 
+                                                data-type="<?php echo $message->type; ?>" 
+                                                data-created-time="<?php echo $message->created_time; ?>" 
+                                            >
+	    										<?php echo $message->title; ?>
 	    									</a>
 	    								</h5>
 
     									<p>
-    										<?php echo excerpt_words($article->content, 30); ?>
+    										<?php echo excerpt_words($message->content, 30); ?>
+                                            &nbsp; 
+                                            <a class="clicked open-message"
+                                                data-toggle="modal" 
+                                                data-target="#show-message"
+                                                data-id="<?php echo $message->id; ?>" 
+                                                data-name="<?php echo $message->name; ?>" 
+                                                data-email="<?php echo $message->email; ?>" 
+                                                data-url="<?php echo $message->url; ?>" 
+                                                data-title="<?php echo $message->title; ?>" 
+                                                data-content="<?php echo $message->content; ?>" 
+                                                data-state="<?php echo $message->state; ?>" 
+                                                data-solve="<?php echo $message->solve; ?>" 
+                                                data-type="<?php echo $message->type; ?>" 
+                                                data-created-time="<?php echo $message->created_time; ?>" 
+                                            >
+                                                Details
+                                            </a>
     									</p>
 
                                         <div class="action">
 
                                             <p class="pull-left">
-                                                <small class="label label-<?php echo get_label('article_state', $article->state); ?>">
-                                                    <i class="fa fa-<?php echo get_icon('article_state', $article->state); ?>"></i> 
-                                                    <?php echo ucfirst($article->state); ?>
+                                                <small class="label-state label label-<?php echo get_label('message_state', $message->state); ?>">
+                                                    <i class="fa fa-<?php echo get_icon('message_state', $message->state); ?>"></i> 
+                                                    <?php echo ucfirst($message->state); ?>
                                                 </small> &nbsp;
-                                                <small class="label label-info">
-                                                    <i class="fa fa-clock-o"></i> 
-                                                    <?php echo set_elapsed(array('end' => 'now', 'start' => $article->updated_time)); ?>
+                                                <small class="label label-<?php echo get_label('message_solved', $message->solve); ?>">
+                                                    <i class="fa fa-<?php echo get_icon('message_solved', $message->solve); ?>"></i> 
+                                                    <?php echo ucfirst($message->solve); ?>
                                                 </small>
                                             </p>
 
         									<p class="pull-right">
 
-        										<!-- Trash and Edit -->
-        										<?php if ($article->state != 'Trash') : ?>
+        										<!-- Read Unread -->
+        										<?php if ($message->state == 'read') : ?>
 
-        										<a href="<?php echo site_url('article/'.$article->slug.'/edit'); ?>" class="text-success">
-    	    										<i class="fa fa-edit"></i> Edit
+        										<a href="<?php echo site_url('message/state/'.$message->id.'/unread'); ?>" class="text-warning confirm" data-text="unread this message" data-icon="fa-circle-o">
+    	    										<i class="fa fa-circle-o"></i> Unread
         										</a>
 
-        										<a href="<?php echo site_url('article/trash/'.$article->slug); ?>" class="text-danger">
-    	    										<i class="fa fa-trash"></i> Trash
-        										</a>
+                                                <?php elseif ($message->state == 'unread') : ?>
 
-    	    									<?php endif; ?>
-        										<!-- / Trash and Edit -->
-
-        										<!-- Restore -->
-    	    									<?php if ($article->state == 'Trash') : ?>
-
-        										<a class="confirm" data-text="restore this article" href="<?php echo site_url('article/restore/'.$article->slug); ?>" class="text-info">
-    	    										<i class="fa fa-refresh"></i> Restore
-        										</a>
-
-                                                <a class="confirm text-danger" data-text="delete permanently this article from database" href="<?php echo site_url('article/delete/'.$article->slug); ?>">
-                                                    <i class="fa fa-remove"></i> Delete
+                                                <a href="<?php echo site_url('message/state/'.$message->id.'/read'); ?>" class="text-primary confirm" data-text="set has been read this message" data-icon="fa-circle">
+                                                    <i class="fa fa-circle"></i> Read
                                                 </a>
 
-    	    									<?php endif; ?>
-        										<!-- / Restore -->
+                                                <?php elseif ($message->state == 'trash') : ?>
 
-        										<!-- Draft -->
-    	    									<?php if ($article->state == 'Publish') : ?>
-
-        										<a href="<?php echo site_url('article/draft/'.$article->slug); ?>" class="text-warning">
-    	    										<i class="fa fa-file-text-o"></i> Draft
-        										</a>
+                                                <a href="<?php echo site_url('message/state/'.$message->id.'/unread'); ?>" class="text-info confirm" data-text="set has been restore this message" data-icon="fa-refresh">
+                                                    <i class="fa fa-refresh"></i> Restore
+                                                </a>                                              
 
     	    									<?php endif; ?>
-        										<!-- / Draft -->
+        										<!-- / Read Unread -->
 
-        										<!-- Publish -->
-    	    									<?php if ($article->state == 'Draft') : ?>
+                                                <!-- solved Unsolved -->
+                                                <?php if ($message->solve == 'solved') : ?>
 
-        										<a href="<?php echo site_url('article/publish/'.$article->slug); ?>" class="text-blue">
-    	    										<i class="fa fa-globe"></i> Publish
-        										</a>
+                                                <a href="<?php echo site_url('message/state/'.$message->id.'/unsolved'); ?>" class="text-danger confirm" data-text="unsolved this message" data-icon="fa-remove">
+                                                    <i class="fa fa-remove"></i> Unsolved
+                                                </a>
 
-    	    									<?php endif; ?>
-        										<!-- / Publish -->
+                                                <?php elseif ($message->solve == 'unsolved') : ?>
+
+                                                <a href="<?php echo site_url('message/state/'.$message->id.'/solved'); ?>" class="text-success confirm" data-text="solved this message" data-icon="fa-check-circle">
+                                                    <i class="fa fa-check-circle"></i> Solved
+                                                </a>                                                    
+
+                                                <?php endif; ?>
+                                                <!-- / solved Unsolved -->
         										
         									</p>
 
@@ -157,12 +182,19 @@
     								</td>
 
                                     <td class="mailbox-name">
-                                        <a href="<?php echo site_url('profile/'.$article->c_username); ?>">
-                                            <?php echo $article->name; ?>
+
+                                        <span class="message-type text-<?php echo get_label('message_type', $message->type); ?>">
+                                            <?php echo ucfirst($message->type); ?>    
+                                        </span>
+                                    
+                                        <a href="<?php echo 'mailto:'.$message->email.'?Subject=Hello" target="_top"' ?>">
+                                            <?php echo excerpt_words($message->name, 2); ?>
                                         </a>
+                                    
                                         <small class="label label-default">
-                                            <i class="fa fa-calendar">&nbsp; </i> <?php echo set_time(array('end' => 'now', 'start' => $article->created_time)); ?>
+                                            <i class="fa fa-calendar">&nbsp; </i> <?php echo set_time(array('end' => 'now', 'start' => $message->created_time)); ?>
                                         </small>
+
                                     </td>
     							</tr>
     						
@@ -174,32 +206,37 @@
 
     			</div><!-- /.box-body -->
 
-    			<div class="box-footer no-padding">
+    			<div class="mailbox-controls">
+                    <!-- Check all button -->
+                    <span class="btn btn-default btn-sm checkbox-toggle">
+                        <i class="fa fa-square-o"></i>
+                    </span>
 
-    				<div class="mailbox-controls">
-    					<!-- Check all button -->
-    					<span class="btn btn-default btn-sm checkbox-toggle">
-    						<i class="fa fa-square-o"></i>
-    					</span>                    
-    					<div class="btn-group">
-    						 <button type="submit" name="state" value="Publish" class="btn btn-success btn-sm">
-                                <i class="fa fa-globe"></i> Publish
-                            </button>
-                            <button type="submit" name="state" value="Draft" class="btn btn-warning btn-sm">
-                                <i class="fa fa-file-text-o"></i> Back to Draft
-                            </button>
-                            <button type="submit" name="state" value="Trash" class="btn btn-danger btn-sm">
-                                <i class="fa fa-trash-o"></i>
-                            </button>
-    					</div><!-- /.btn-group -->
-    					<div class="pull-right">
-                            <div class="box-tools">
-                                <?php echo $this->pagination->create_links(); ?>
-                            </div><!-- /.pull-right -->
-                        </div>
-    				</div>
+                    <div class="btn-group">
+                        <button type="submit" name="state" value="read" class="btn btn-primary btn-sm">
+                            <i class="fa fa-circle"></i> Read
+                        </button>
+                        <button type="submit" name="state" value="unread" class="btn btn-warning btn-sm">
+                            <i class="fa fa-circle-o"></i> Unread
+                        </button>
+                        <button type="submit" name="solved" value="solved" class="btn btn-success btn-sm">
+                            <i class="fa fa-check-square-o"></i> Solved
+                        </button>
+                        <button type="submit" name="solved" value="unsolved" class="btn btn-danger btn-sm">
+                            <i class="fa fa-remove"></i> Unsolved
+                        </button>
+                    </div><!-- /.btn-group -->
 
-    			</div>
+                    <button type="submit" name="state" value="trash" class="btn btn-danger btn-sm">
+                        <i class="fa fa-trash-o"></i>
+                    </button>
+
+                    <div class="pull-right">
+                        <div class="box-tools">
+                            <?php echo $this->pagination->create_links(); ?>
+                        </div><!-- /.pull-right -->
+                    </div>
+                </div>
 
                 </form>
 

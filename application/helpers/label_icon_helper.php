@@ -29,6 +29,25 @@ if ( ! function_exists('get_label')) {
 
 					break;
 
+				case 'message_state':
+
+					$state = array(
+						'read' => 'primary',
+						'unread' => 'info',
+						'trash' => 'danger'
+					);
+
+					break;
+
+				case 'message_solved':
+
+					$state = array(
+						'solved' => 'success',
+						'unsolved' => 'danger'
+					);
+
+					break;
+
 				case 'media_type':
 
 					$state = array(
@@ -36,6 +55,17 @@ if ( ! function_exists('get_label')) {
 						'file' => 'info',
 						'audio' => 'success',
 						'video' => 'danger'
+					);
+
+					break;
+
+				case 'message_type':
+
+					$state = array(
+						'others' => 'success',
+						'question' => 'info',
+						'suggestion' => 'warning',
+						'criticism' => 'danger'
 					);
 
 					break;
@@ -84,6 +114,25 @@ if ( ! function_exists('get_label')) {
 						'file' => 'file',
 						'audio' => 'music',
 						'video' => 'video-camera'
+					);
+
+					break;
+
+				case 'message_state':
+
+					$state = array(
+						'read' => 'circle',
+						'unread' => 'circle-o',
+						'trash' => 'trash'
+					);
+
+					break;
+
+				case 'message_solved':
+
+					$state = array(
+						'solved' => 'check-square-o',
+						'unsolved' => 'times'
 					);
 
 					break;

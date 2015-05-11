@@ -74,20 +74,36 @@ class Message extends CI_Controller {
 
 	}
 
-	private function validation($type = false) {
+	private function validation($type = false, $ajax = false) {
 
 		$this->load->library('form_validation');
 
-		$this->form_validation->set_rules('title', 'Title', 'required|trim|xss_clean');
-		$this->form_validation->set_rules('content', 'Content', 'required|trim|xss_clean');
-		$this->form_validation->set_rules('type', 'Type', 'trim|xss_clean');
+		if ($type == 'update') :
+
+			$this->form_validation->set_rules('state', 'State', 'trim|xss_clean');
+			$this->form_validation->set_rules('type', 'Type', 'trim|xss_clean');
+
+		else :
+
+			$this->form_validation->set_rules('name', 'Sender Name', 'required|trim|xss_clean');
+			$this->form_validation->set_rules('email', 'Sender Email', 'required|valid_email|trim|xss_clean');
+			$this->form_validation->set_rules('url', 'URL', 'required|trim|xss_clean');
+			$this->form_validation->set_rules('title', 'Title', 'required|trim|xss_clean');
+			$this->form_validation->set_rules('content', 'Content', 'required|trim|xss_clean');
+			$this->form_validation->set_rules('type', 'Type', 'trim|xss_clean');
+
+		endif;
 
 		if ($this->form_validation->run() == FALSE) :
 
 			$param['alert'] = 'danger';
 			$param['notification'] = validation_errors();
 
-			$this->common->redirect($param);
+			if ($ajax == false)
+				$this->common->redirect($param);
+
+			else
+				echo json_encode($param);
 
 		endif;
 
@@ -134,7 +150,7 @@ class Message extends CI_Controller {
 					'description' => 'All message list in Booci',
 				),
 				'breadcrumb' => array(
-					'one' => 'messages',
+					'one' => 'Messages',
 					'one_link' => site_url('message'),
 					'icon' => 'file-text-o',
 					'two' => 'List',
@@ -145,45 +161,49 @@ class Message extends CI_Controller {
 			$userdata = $this->userdata;
 
 			// Check state
-			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('unread', 'read', 'solve', 'unsolve'))) ? $this->uri->segment(3) : false;
+			$state = (!empty($this->uri->segment(3)) && in_array($this->uri->segment(3), array('unread', 'read', 'trash', 'solved', 'unsolved'))) ? $this->uri->segment(3) : false;
 
 			$type = 'bc_message.state';
 			if (!empty($state)) :
 
-				if ($state == 'read' || $state == 'unread') :
+				if ($state == 'read' || $state == 'unread' || $state == 'trash') :
 					$type = 'bc_message.state';
 
-				elseif ($state == 'solve' || $state == 'unsolve') :
+				elseif ($state == 'solved' || $state == 'unsolved') :
 					$type = 'bc_message.solve';
 
 				endif;
 
 			endif;
 
-			$search = (!empty($this->input->get('search'))) ? array('bc_message.title' => $this->input->get('search')) : false;
+			// Check search
+			$search = (!empty($this->input->get('search'))) ? $this->input->get('search') : false;
+
+			// Check category
+			$category = (!empty($this->input->get('category', true)) && in_array($this->input->get('category', true), array('criticism', 'suggestion', 'question', 'others'))) ? $this->input->get('category', true) : false;
 
 			// Get messages data
 			$param = array(
-				'select' => 'user',
-				'join' => 'user',
 				'start' => $page,
 				'limit' => 10,
 				'order_by' => 'bc_message.created_time DESC',
 				// Set default get all condition
 				'type' => 'where_like',
 				'condition' => true,
-				'condition_like' => $search,
+				'condition_like' => array(
+					'bc_message.title' => $search,
+					'bc_message.type' => $category
+				),
 			);
 
 			// For super admin, admin and editor if access not only all list
 			if (!empty($state))
 				$param['condition_where'] = array($type => $state);
 
-			// Set to conut all messages data
-			$param_count = array(
-				'type' => $type			);
-
-			$count = $this->set_count($param_count);
+			// Set to count all messages data
+			$countRead = $this->set_count(array('type' => 'state'));
+			$countSolve = $this->set_count(array('type' => 'solve')); 
+			$countType = $this->set_count(array('type' => 'type')); 
 			$messages = $this->message_model->get_all($param);
 
 			// Set pagination
@@ -203,9 +223,9 @@ class Message extends CI_Controller {
 			if (!empty($state))
 				$config['url']['uri3'] = $state;
 
-			$this->message_numbering->set_pagination($config);
+			$this->page_numbering->set_pagination($config);
 
-			$param['count'] = $count;
+			$param['count'] = array_merge($countRead, $countSolve, $countType);
 			$param['messages'] = $messages;
 
 			// Set additional CSS and JS
@@ -213,7 +233,7 @@ class Message extends CI_Controller {
 			$this->additional_js = array('assets/plugins/iCheck/icheck.min.js');
 
 			// Render view
-			$param['messages'] = array('message/index');
+			$param['pages'] = array('message/index', 'message/show');
 			$this->common->backend($param);
 
 		endif;
@@ -318,68 +338,46 @@ class Message extends CI_Controller {
 
 	}
 
-	public function update($slug = false) {
+	public function update($id = false, $ajax = false) {
 
 		// Check user parameter
-		$param = $this->common->check_param($slug);
+		$param = $this->common->check_param($id);
 
 		if ($this->permit && $param) :
 
-			// Check if user open right username
-			$edit = $this->check_access($slug);
+			// Check validation
+			$validation = $this->validation('update', $ajax);
 
-			if ($edit) :
+			if ($validation) :
 
-				// Check validation
-				$validation = $this->validation('update');
+				$notification = [
+					'notification' => 'Something wrong when update your message',
+					'alert' => 'danger'
+				];
 
-				if ($validation) :
+				// Check type
+				if (!empty($this->input->post('solve')))
+					$type = 'solve';
+
+				if (!empty($this->input->post('state')))
+					$type = 'state';
+
+				// Set parameter
+				$param = array(
+					'type' => 'where',
+					'condition' => array('id' => $id),
+					'restrict' => $type,
+				);
+
+				$update = $this->message_model->update($param);
+
+				if ($update) :
 
 					$notification = [
-						'notification' => 'Something wrong when update your message',
-						'alert' => 'danger'
+						'notification' => 'Success solved message !',
+						'alert' => 'success',
+						'redirect' => site_url('message/all')
 					];
-
-					// Set state
-					$this->input->post('state');
-					if (!empty($this->input->post('created_time'))) :
-						$this->load->library('datetimes');
-						$diff = $this->datetimes->datetime_status($this->input->post('created_time'));
-						$_POST['state'] = ($diff) ? 'Publish' : 'Draft';
-					endif;
-
-					// Set creator / updater
-					$userdata = $this->userdata;
-					$_POST['updated_by'] = $userdata->id;
-					$_POST['updated_time'] = date('Y-m-d H:i:s');
-
-					$param = array(
-						'type' => 'where',
-						'condition' => array('slug' => $slug),
-						'restrict' => 'update',
-					);
-
-					// Set slug
-					$this->set_slug($slug);
-
-					$update = $this->message_model->update($param);
-
-					if ($update) :
-
-						// Get edited message
-						$param = array(
-							'type' => 'where',
-							'condition' => array('bc_message.slug' => $this->input->post('slug')),
-						);
-						$message = $this->message_model->get_one($param, true);
-
-						$notification = [
-							'notification' => 'Success updated your message !',
-							'alert' => 'success',
-							'redirect' => site_url('message/'.$this->input->post('slug').'/edit')
-						];
-
-					endif;
 
 				endif;
 
@@ -387,57 +385,46 @@ class Message extends CI_Controller {
 
 		endif;
 
-		$this->common->redirect($notification);
+		if ($ajax == false) 
+			$this->common->redirect($notification);
+
+		else
+			echo json_encode($notification);
 
 	}
 
-	public function status($slug = false, $state = false) {
+	public function state($id = false, $state = false) {
 
-		// Check user parameter
-		$param = $this->common->check_param($slug);
+		$notification = [
+			'notification' => "You don't have access to do that !",
+			'alert' => 'danger'
+		];
 
-		if ($this->permit && $param) :
+		if ($this->permit) :
 
-			// Check if user open right username
-			$access = $this->check_access($slug);
+			if ($id && $state) :
 
-			if ($access) :
+				if ($state == 'read' || $state == 'unread') :
+					$type = 'state';
 
-				$notification = [
-					'notification' => 'Something wrong when '.$state.' your message',
-					'alert' => 'danger'
-				];
+				elseif ($state == 'solved' || $state == 'unsolved') :
+					$type = 'solve';
 
-				// Set state
-				$state = ($state == 'restore') ? 'draft' : $state;
-				$_POST['state'] = ucfirst($state);
+				endif;
 
-				// Set creator / updater
-				$userdata = $this->userdata;
-				$_POST['updated_by'] = $userdata->id;
-				$_POST['updated_time'] = date('Y-m-d H:i:s');
+				$_POST[$type] = $state;
 
 				$param = array(
 					'type' => 'where',
-					'condition' => array('slug' => $slug),
-					'restrict' => 'state',
+					'condition' => array('id' => $id),
+					'restrict' => $type,
 				);
-
-				$action = $this->message_model->update($param);
-
-				if ($action) :
-
-					// Get edited message
-					$param = array(
-						'type' => 'where',
-						'condition' => array('bc_message.slug' => $this->input->post('slug')),
-					);
-					$message = $this->message_model->get_one($param, true);
+				
+				if ($this->message_model->update($param)) :
 
 					$notification = [
-						'notification' => 'Success '.$state.'ed your message !',
-						'alert' => 'success',
-						'redirect' => site_url('message/all')
+						'notification' => "Your selected messages has been set ".strtolower($this->input->post('state'))." successfully !",
+						'alert' => 'success'
 					];
 
 				endif;
@@ -452,33 +439,30 @@ class Message extends CI_Controller {
 
 	public function changeState() {
 
-		$notification = false;
-
 		if ($this->permit) :
 
 			// Get message ID
-			$slugs = $this->input->post('slug');
+			$ids = $this->input->post('id');
+			$type = $this->input->post('type');
 
-			$status = true;
-			foreach ($slugs as $key => $slug) :
+			if ($type == 'read' || $type == 'unread' || $type == 'trash') :
+				$column = 'state';
 
-				if ($this->check_access($slug) == false)
-					$status = false;
+			elseif ($type == 'solved' || $type == 'unsolved') :
+				$column = 'solve';
 
-			endforeach;
+			endif;
 
-			if ($status && $slugs) :
+			$_POST[$column] = $type;
 
-				// Set creator / updater
-				$userdata = $this->userdata;
-				$_POST['updated_by'] = $userdata->id;
+			if ($ids) :
 
 				$param = array(
 					'type' => 'where_in',
 					'condition' => true,
-					'condition_column' => 'slug',
-					'condition_keyword' => $slugs,
-					'restrict' => 'state',
+					'condition_column' => 'id',
+					'condition_keyword' => $ids,
+					'restrict' => $column,
 				);
 				
 				if ($this->message_model->update($param)) :

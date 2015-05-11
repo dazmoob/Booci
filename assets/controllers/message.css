@@ -1,0 +1,7 @@
+.message-type {
+	font-weight: bolder;
+}
+
+#show-solve, #show-type {
+	text-transform: capitalize;
+}

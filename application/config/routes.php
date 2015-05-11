@@ -129,6 +129,20 @@ $route['media/video/(:num)'] = 'media/index/video/$1';
 $route['media/update/(:any)'] = 'media/update/$1';
 $route['media/delete/(:any)'] = 'media/delete/$1';
 
+// Message
+// Backend
+$route['message/all'] = 'message/all';
+$route['message/all/list'] = 'message/all';
+$route['message/all/read'] = 'message/all/$1';
+$route['message/all/unread'] = 'message/all/$1';
+$route['message/all/solve'] = 'message/all/$1';
+$route['message/all/unsolve'] = 'message/all/$1';
+$route['message/all/list/(:num)'] = 'message/all/list/$1';
+$route['message/all/read/(:num)'] = 'message/all/read/$1';
+$route['message/all/unread/(:num)'] = 'message/all/unread/$1';
+$route['message/all/solve/(:num)'] = 'message/all/solve/$1';
+$route['message/all/unsolve/(:num)'] = 'message/all/unsolve/$1';
+
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';
 
