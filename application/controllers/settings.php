@@ -19,6 +19,7 @@ class Settings extends CI_Controller {
 	 */
 
 	function __construct() {
+
 		parent::__construct();
 		$this->load->model('web_model');
 		$this->load->model('user_model');
@@ -29,6 +30,7 @@ class Settings extends CI_Controller {
 		$this->userdata = $this->usersession['data'];
 		$this->useraccess = $this->usersession['access'];
 		$this->userlog = $this->usersession['log'];
+
 	}
 
 	/*
@@ -122,4 +124,78 @@ class Settings extends CI_Controller {
 		endif;
 
 	}
+
+	public function navigation($page = 0) {
+
+		if ($this->access) :
+
+			// Initialize basic info
+			$variable = [
+				'basic' => array('title' => 'Navigation Settings'),
+				'header' => [
+					'title' => 'Navigation Settings',
+					'description' => 'Navigation configuration for web menu and navigating',
+				],
+				'breadcrumb' => [
+					'one' => 'Settings',
+					'one_link' => site_url('settings/navigation'),
+					'icon' => 'list',
+					'two' => 'Navigation'
+				]
+			];
+			$this->set_variable($variable);
+
+			// Set basic data
+			$param['navigation'] = $this->navigation_model->get_all($param);
+
+			// Set additional CSS and JS
+			$this->additional_css = array('bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css');
+			$this->additional_js = array('bower_components/moment/min/moment.min.js', 'bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js');
+
+			// Render view
+			$param['pages'] = array('settings/navigation/index');
+			$this->common->backend($param);
+
+		endif;
+
+	}
+
+	public function updateNavigation() {
+
+		if ($this->access && $param) :
+
+			$validation = $this->validation('update');
+
+			// Load random string library and set random password
+			$param = array();
+			$param = [
+				'restrict' => 'update',
+				'type' => 'where',
+				'condition' => array('username' => $username)
+			];
+
+			if ($this->user_model->update($param)) :
+
+				$param = [
+					'alert' => 'success',
+					'notification' => 'Success update '.$this->input->post('username').' data',
+					'redirect' => site_url('user/'.$username.'/edit'),
+				];
+
+			else :
+
+				$param = [
+					'alert' => 'danger',
+					'notification' => 'Something wrong when update user data, please try again !',
+					'redirect' => site_url('user/'.$username.'/edit'),
+				];
+
+			endif;
+
+			$this->common->redirect($param);
+
+		endif;
+
+	}
+
 }	
