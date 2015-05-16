@@ -167,11 +167,15 @@ class Navigation_model extends CI_Model {
 		if ($param['restrict'] == 'update') :
 
 			$data['name'] = $this->input->post('name');
+			$data['status'] = $this->input->post('status');
+			$data['notes'] = $this->input->post('notes');
 
 		else :
 
 			$data['name'] = $this->input->post('name');
 			$data['slug'] = $this->input->post('slug');
+			$data['status'] = $this->input->post('status');
+			$data['notes'] = $this->input->post('notes');
 
 		endif;
 
@@ -191,6 +195,8 @@ class Navigation_model extends CI_Model {
 			$_POST['id'] = $data->id;
 			$_POST['name'] = $data->name;
 			$_POST['slug'] = $data->slug;
+			$_POST['status'] = $data->status;
+			$_POST['notes'] = $data->notes;
 
 		endif;
 

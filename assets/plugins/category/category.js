@@ -20,6 +20,7 @@ $(function(){
 function createCategory() {
 
 	var name = $('#input-category').val();
+	
 	$.post(project + '/category/ajaxCreate', {name: name}, function(result){
 		$('#category').append('<option value="'+ result.id +'">'+ result.category +'</option>');
 	}, 'json');

@@ -192,6 +192,12 @@
 							Basic
 						</a>
 					</li>
+					<li>
+						<a href="<?php echo site_url('settings/navigation'); ?>">
+							<i class="fa fa-list"></i>
+							Navigations
+						</a>
+					</li>
 				</ul>
 			</li>
 			<?php endif; ?>
