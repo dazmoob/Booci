@@ -21,6 +21,7 @@ class Article extends CI_Controller {
 	function __construct() {
 		parent::__construct();
 		$this->load->model('article_model');
+		$this->load->model('page_model');
 		$this->load->model('user_model');
 		$this->load->helper('label_icon_helper');
 		$this->load->helper('elapsed_helper');
