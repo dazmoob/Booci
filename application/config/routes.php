@@ -143,6 +143,10 @@ $route['message/all/unread/(:num)'] = 'message/all/unread/$1';
 $route['message/all/solve/(:num)'] = 'message/all/solve/$1';
 $route['message/all/unsolve/(:num)'] = 'message/all/unsolve/$1';
 
+// Slideshow
+$route['slideshow/all'] = 'slideshow/index';
+$route['slideshow/(:any)/edit'] = 'slideshow/edit/$1';
+
 // Frontend
 // $route['login/admin/(:num)'] = 'login/admin/$1';
 

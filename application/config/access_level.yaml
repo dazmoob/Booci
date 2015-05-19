@@ -13,6 +13,7 @@ super_admin :
 	- vm_message
 	- pm_message
 	- m_message_all
+	- c_slideshow
 
 admin : 
 	- c_user
@@ -27,6 +28,7 @@ admin :
 	- vm_message
 	- pm_message
 	- m_message_all
+	- c_slideshow
 
 editor : 
 	- pm_page
