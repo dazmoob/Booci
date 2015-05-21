@@ -5,13 +5,13 @@ $(document).ready(function() {
 
 		var open = $('.pictures').hasClass('unloaded');
 
-		if (open == true) {
+		// if (open == true) {
 
 			$.getJSON(project + '/article/getImage', function(result) {
 
+		        	console.log(result);
 		        if (result.status == true) {
 
-		        	// console.log(result.data[]);
 
 		        	for (var i = 0; i < result.data.length; i++) {
 		        		var image = result.data[i];
@@ -35,7 +35,7 @@ $(document).ready(function() {
 
 		        }
 		    });
-		}
+		// }
 
 		$('.pictures').removeClass('unloaded');
 

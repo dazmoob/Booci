@@ -124,6 +124,13 @@
                                             </p>
                                             <div class="action">
 
+                                                <p class="pull-left">
+                                                    <a href="#change-picture">
+                                                        <i class="fa fa-image"></i>
+                                                        &nbsp; Change Picture
+                                                    </a>
+                                                </p>
+
                                                 <p class="pull-right">
 
                                                     <a 
@@ -134,9 +141,9 @@
                                                         data-subtitle="<?php echo $slideshow->subtitle; ?>"
                                                         data-description="<?php echo $slideshow->description; ?>"
                                                         data-src="<?php echo site_url($slideshow->src); ?>" 
-                                                        data-label="<?php echo site_url($slideshow->label); ?>" 
-                                                        data-url="<?php echo site_url($slideshow->url); ?>" 
-                                                        data-status="<?php echo site_url($slideshow->status); ?>" 
+                                                        data-label="<?php echo $slideshow->label; ?>" 
+                                                        data-url="<?php echo $slideshow->url; ?>" 
+                                                        data-status="<?php echo $slideshow->status; ?>" 
                                                         class="text-success clicked edit-slideshow" >
                                                         <i class="fa fa-edit"></i> Edit
                                                     </a>

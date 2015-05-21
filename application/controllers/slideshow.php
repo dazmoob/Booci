@@ -306,6 +306,57 @@ class Slideshow extends CI_Controller {
 
 	}
 
+	public function updateSlideshow($id = false) {
+
+		// Check media parameter
+		$param = $this->common->check_param($id);
+
+		if ($this->access && $param) :
+
+			$validation = $this->validation();
+
+			// Check validation
+			if ($validation) :
+
+				// Set creator / updater
+				$userdata = $this->userdata;
+				$_POST['updated_by'] = $userdata->id;
+				$_POST['updated_time'] = date('Y-m-d H:i:s');
+
+				// Set update parameter
+				$param = array();
+				$param = [
+					'restrict' => 'update',
+					'type' => 'where',
+					'condition' => array('id' => $id)
+				];
+
+				if ($this->media_model->update($param)) :
+
+					$param = [
+						'alert' => 'success',
+						'notification' => 'Success update '.$this->input->post('id').' data',
+						'redirect' => site_url('media/'.$this->input->post('type')),
+					];
+
+				else :
+
+					$param = [
+						'alert' => 'danger',
+						'notification' => 'Something wrong when update media data, please try again !',
+						'redirect' => site_url('media/'.$id.'/edit'),
+					];
+
+				endif;
+
+			endif;
+
+			$this->common->redirect($param);
+
+		endif;
+
+	}
+
 	public function delete($filename = false) {
 
 		// Check media parameter
